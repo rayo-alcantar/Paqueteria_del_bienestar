@@ -1,0 +1,24 @@
+   # Entorno virtual
+   .venv/
+   venv/
+   env/
+
+   # Archivos de caché de Python
+   __pycache__/
+   *.py[cod]
+
+   # Archivos de configuración de Django
+   *.log
+   *.pot
+   *.pyc
+
+   # Archivos de base de datos
+   db.sqlite3
+
+   # Otros archivos que podrías querer ignorar
+   .DS_Store  # Para macOS
+   *.sqlite3  # Si usas SQLite como base de datos
+
+   # Entorno local (opcional)
+   local_settings.py
+   
