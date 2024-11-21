@@ -1,4 +1,34 @@
+import uuid
 from django.db import models
+
+class Paquete(models.Model):
+    codigo = models.CharField(
+        max_length=100, unique=True, blank=True
+    )  # Código único del paquete
+    descripcion = models.TextField()  # Descripción del paquete
+    peso = models.FloatField()  # Peso del paquete en kilogramos
+    estado_actual = models.ForeignKey(
+        "Estado", on_delete=models.SET_NULL, null=True, related_name="paquetes"
+    )  # Estado actual donde se encuentra el paquete
+    fecha_envio = models.DateTimeField(auto_now_add=True)  # Fecha de envío del paquete
+    fecha_entrega = models.DateTimeField(null=True, blank=True)  # Fecha de entrega estimada o real
+    estado_paquete = models.CharField(
+        max_length=50,
+        choices=[
+            ("En tránsito", "En tránsito"),
+            ("Recolección", "Recolección"),
+            ("Entregado", "Entregado"),
+        ],
+        default="En tránsito",
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:  # Generar un código si no existe
+            self.codigo = str(uuid.uuid4()).replace("-", "").upper()[:12]
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Paquete {self.codigo} - {self.estado_paquete}"
 
 class Estado(models.Model):
 	nombre = models.CharField(max_length=100, unique=True)
@@ -14,29 +44,6 @@ class Frase(models.Model):
 
 	def __str__(self):
 		return self.frase
-
-
-class Paquete(models.Model):
-	codigo = models.CharField(max_length=100, unique=True)  # Código único del paquete
-	descripcion = models.TextField()  # Descripción del paquete
-	peso = models.FloatField()  # Peso del paquete en kilogramos
-	estado_actual = models.ForeignKey(
-		Estado, on_delete=models.SET_NULL, null=True, related_name='paquetes'
-	)  # Estado actual donde se encuentra el paquete
-	fecha_envio = models.DateTimeField(auto_now_add=True)  # Fecha de envío del paquete
-	fecha_entrega = models.DateTimeField(null=True, blank=True)  # Fecha de entrega estimada o real
-	estado_paquete = models.CharField(
-		max_length=50,
-		choices=[
-			('En tránsito', 'En tránsito'),
-			('Recolección', 'Recolección'),
-			('Entregado', 'Entregado'),
-		],
-		default='En tránsito',
-	)
-
-	def __str__(self):
-		return f"Paquete {self.codigo} - {self.estado_paquete}"
 
 
 class Ruta(models.Model):

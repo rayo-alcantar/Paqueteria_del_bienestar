@@ -1,24 +1,34 @@
-   # Entorno virtual
-   .venv/
-   venv/
-   env/
+# Entornos virtuales
+.venv/
+venv/
+env/
 
-   # Archivos de caché de Python
-   __pycache__/
-   *.py[cod]
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
 
-   # Archivos de configuración de Django
-   *.log
-   *.pot
-   *.pyc
+# Archivos de configuración de Django
+*.log
+*.pot
+*.pyc
+local_settings.py
 
-   # Archivos de base de datos
-   db.sqlite3
+# Archivos de base de datos
+db.sqlite3
+*.sqlite3
 
-   # Otros archivos que podrías querer ignorar
-   .DS_Store  # Para macOS
-   *.sqlite3  # Si usas SQLite como base de datos
+# Archivos específicos del sistema operativo
+.DS_Store  # Para macOS
+Thumbs.db  # Para Windows
 
-   # Entorno local (opcional)
-   local_settings.py
-   
+# Archivos relacionados con herramientas de desarrollo
+*.migrations/  # Ignorar migraciones si no son finales o iniciales
+
+# Archivos de configuración de IDEs y editores de texto
+.idea/  # PyCharm
+.vscode/  # Visual Studio Code
+*.swp  # Archivos temporales de Vim
+*.swo
+
+# Otros archivos o configuraciones opcionales
+.env  # Variables de entorno (si usas dotenv)
