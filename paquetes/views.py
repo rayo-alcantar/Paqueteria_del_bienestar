@@ -3,12 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Paquete, Estado, Ruta, Frase
 from .serializers import PaqueteSerializer, RutaSerializer
-
 import uuid
 
 class CrearPaqueteView(APIView):
 	"""
-	Vista para crear un paquete, generar su ruta, y asignar el número de rastreo.
+	Vista para crear un paquete, generar su ruta y asignar el número de rastreo.
 	"""
 	def post(self, request, *args, **kwargs):
 		# Serializar los datos de entrada
@@ -16,12 +15,11 @@ class CrearPaqueteView(APIView):
 		if serializer.is_valid():
 			# Generar el código único para el paquete
 			codigo = str(uuid.uuid4()).replace("-", "").upper()[:10]  # Código robusto
-			serializer.save(codigo=codigo)  # Guardar el paquete con el código generado
-			paquete = serializer.instance
+			paquete = serializer.save(codigo=codigo)  # Guardar el paquete con el código generado
 			
 			# Obtener estados de origen y destino
-			estado_origen = Estado.objects.get(pk=request.data.get("estado_origen_id"))
-			estado_destino = Estado.objects.get(pk=request.data.get("estado_destino_id"))
+			estado_origen = Estado.objects.get(pk=request.data["estado_origen_id"])
+			estado_destino = Estado.objects.get(pk=request.data["estado_destino_id"])
 			
 			# Generar la ruta automáticamente con frases
 			frases = Frase.objects.all()
@@ -31,13 +29,12 @@ class CrearPaqueteView(APIView):
 				estado_origen=estado_origen,
 				estado_destino=estado_destino,
 			)
-			
-			# Crear pasos intermedios si es necesario (simulación de ruta)
+
+			# Simular pasos intermedios (opcional, según tu lógica de negocio)
 			if estado_origen.region != estado_destino.region:
 				estados_intermedios = Estado.objects.filter(
 					region__in=["Centro", "Norte", "Sur"]
 				).exclude(pk__in=[estado_origen.pk, estado_destino.pk])[:3]
-				
 				for estado in estados_intermedios:
 					Ruta.objects.create(
 						paquete=paquete,
@@ -45,7 +42,7 @@ class CrearPaqueteView(APIView):
 						estado_origen=estado_origen,
 						estado_destino=estado,
 					)
-			
+
 			# Ruta final
 			Ruta.objects.create(
 				paquete=paquete,
@@ -53,10 +50,9 @@ class CrearPaqueteView(APIView):
 				estado_origen=estado_origen,
 				estado_destino=estado_destino,
 			)
-			
+
 			return Response({"codigo": codigo}, status=status.HTTP_201_CREATED)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class DetallePaqueteView(generics.RetrieveAPIView):
 	"""

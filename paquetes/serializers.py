@@ -3,26 +3,40 @@ from .models import Estado, Frase, Paquete, Ruta
 
 class PaqueteSerializer(serializers.ModelSerializer):
 	estado_origen_id = serializers.PrimaryKeyRelatedField(
-		queryset=Estado.objects.all(), source="rutas.first.estado_origen", write_only=True
+		queryset=Estado.objects.all(), write_only=True
 	)
 	estado_destino_id = serializers.PrimaryKeyRelatedField(
-		queryset=Estado.objects.all(), source="rutas.first.estado_destino", write_only=True
+		queryset=Estado.objects.all(), write_only=True
 	)
 
 	class Meta:
 		model = Paquete
 		fields = [
-			"codigo",  # Ahora el código será solo lectura
+			"codigo",  # Solo lectura
 			"descripcion",
 			"peso",
-			"estado_actual",
-			"fecha_envio",
-			"fecha_entrega",
-			"estado_paquete",
-			"estado_origen_id",
-			"estado_destino_id",
+			"estado_actual",  # Solo lectura
+			"fecha_envio",  # Solo lectura
+			"fecha_entrega",  # Opcional
+			"estado_paquete",  # Solo lectura
+			"estado_origen_id",  # Entrada
+			"estado_destino_id",  # Entrada
 		]
 		read_only_fields = ["codigo", "estado_actual", "fecha_envio", "estado_paquete"]
+
+	def create(self, validated_data):
+		# Extraer los campos relacionados
+		estado_origen = validated_data.pop("estado_origen_id")
+		estado_destino = validated_data.pop("estado_destino_id")
+
+		# Crear el paquete
+		paquete = Paquete.objects.create(
+			**validated_data,
+			estado_actual=estado_origen,  # Inicialmente, el paquete está en el estado de origen
+		)
+
+		# Devolver el paquete
+		return paquete
 
 class EstadoSerializer(serializers.ModelSerializer):
 	class Meta:
