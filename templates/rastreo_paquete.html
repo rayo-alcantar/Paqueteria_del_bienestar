@@ -4,12 +4,16 @@
 
 {% block content %}
 <h1>Rastrear Paquete</h1>
-<form method="POST" action="{% url 'buscar_paquete' %}">
+<form method="POST" action="{% url 'rastreo_paquete' %}">
     {% csrf_token %}
     <label for="codigo">Número de Rastreo:</label>
     <input type="text" id="codigo" name="codigo" required>
     <button type="submit">Buscar Paquete</button>
 </form>
+
+{% if error %}
+    <p style="color: red;">{{ error }}</p>
+{% endif %}
 
 {% if paquete %}
     <h2>Información del Paquete</h2>

@@ -8,7 +8,7 @@ import uuid
 
 # Vista para la página principal
 def index(request):
-	return render(request, 'index.html')  # Cambiado para que apunte a "templates/index.html"
+	return render(request, 'index.html')  # Apunta a "templates/index.html"
 
 # Vista para rastrear paquete
 def rastrear_paquete(request):
@@ -17,11 +17,11 @@ def rastrear_paquete(request):
 		try:
 			paquete = Paquete.objects.get(codigo=codigo)
 			rutas = Ruta.objects.filter(paquete=paquete)
-			return render(request, 'paquetes/rastreo_paquete.html', {"paquete": paquete, "rutas": rutas})
+			return render(request, 'rastreo_paquete.html', {"paquete": paquete, "rutas": rutas})
 		except Paquete.DoesNotExist:
 			error = "El número de rastreo ingresado no existe."
-			return render(request, 'paquetes/rastreo_paquete.html', {"error": error})
-	return render(request, 'paquetes/rastreo_paquete.html')
+			return render(request, 'rastreo_paquete.html', {"error": error})
+	return render(request, 'rastreo_paquete.html')  # Apunta a "templates/rastreo_paquete.html"
 
 # Vista para solicitar envío
 def solicitar_envio(request):
@@ -67,16 +67,16 @@ def solicitar_envio(request):
 				estado_destino=estado_destino,
 			)
 
-			return render(request, 'paquetes/solicitar_envio.html', {"codigo": codigo, "success": True})
+			return render(request, 'solicitar_envio.html', {"codigo": codigo, "success": True})
 		except Exception as e:
 			error = f"Hubo un error al procesar tu solicitud: {e}"
-			return render(request, 'paquetes/solicitar_envio.html', {"error": error})
+			return render(request, 'solicitar_envio.html', {"error": error})
 
-	return render(request, 'paquetes/solicitar_envio.html')
+	return render(request, 'solicitar_envio.html')  # Apunta a "templates/solicitar_envio.html"
 
 # Vista "Acerca de"
 def acerca_de(request):
-	return render(request, 'paquetes/acerca_de.html')
+	return render(request, 'acerca_de.html')  # Apunta a "templates/acerca_de.html"
 
 # API Views
 
