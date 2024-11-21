@@ -1,0 +1,44 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Solicitar Envío{% endblock %}
+
+{% block content %}
+<h1>Solicitar Envío</h1>
+<form method="POST" action="{% url 'crear_paquete' %}">
+    {% csrf_token %}
+    <label for="direccion_origen">Dirección de Recolección:</label>
+    <input type="text" id="direccion_origen" name="direccion_origen" required>
+    
+    <label for="estado_origen">Estado de Origen:</label>
+    <select id="estado_origen" name="estado_origen_id" required>
+        {% for estado in estados %}
+        <option value="{{ estado.id }}">{{ estado.nombre }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="nombre_emisor">Nombre del Emisor:</label>
+    <input type="text" id="nombre_emisor" name="nombre_emisor" required>
+
+    <label for="direccion_destino">Dirección de Entrega:</label>
+    <input type="text" id="direccion_destino" name="direccion_destino" required>
+    
+    <label for="estado_destino">Estado de Destino:</label>
+    <select id="estado_destino" name="estado_destino_id" required>
+        {% for estado in estados %}
+        <option value="{{ estado.id }}">{{ estado.nombre }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="peso">Peso del Paquete:</label>
+    <input type="number" id="peso" name="peso" step="0.1" required>
+
+    <label for="descripcion">Descripción del Paquete:</label>
+    <textarea id="descripcion" name="descripcion" required></textarea>
+
+    <button type="submit">Solicitar Recolección</button>
+</form>
+
+{% if codigo %}
+    <p>¡Tu número de rastreo es: <strong>{{ codigo }}</strong>!</p>
+{% endif %}
+{% endblock %}

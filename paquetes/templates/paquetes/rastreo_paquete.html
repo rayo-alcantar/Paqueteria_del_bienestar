@@ -1,0 +1,38 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Rastrear Paquete{% endblock %}
+
+{% block content %}
+<h1>Rastrear Paquete</h1>
+<form method="POST" action="{% url 'buscar_paquete' %}">
+    {% csrf_token %}
+    <label for="codigo">Número de Rastreo:</label>
+    <input type="text" id="codigo" name="codigo" required>
+    <button type="submit">Buscar Paquete</button>
+</form>
+
+{% if paquete %}
+    <h2>Información del Paquete</h2>
+    <table>
+        <tr>
+            <th>Estado de Origen</th>
+            <th>Estado de Destino</th>
+            <th>Estado Actual</th>
+            <th>Estado del Paquete</th>
+        </tr>
+        <tr>
+            <td>{{ paquete.estado_origen }}</td>
+            <td>{{ paquete.estado_destino }}</td>
+            <td>{{ paquete.estado_actual }}</td>
+            <td>{{ paquete.estado_paquete }}</td>
+        </tr>
+    </table>
+
+    <h3>Ruta del Paquete</h3>
+    <ul>
+        {% for ruta in rutas %}
+        <li>{{ ruta.frase }} ({{ ruta.fecha_actualizacion }})</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
