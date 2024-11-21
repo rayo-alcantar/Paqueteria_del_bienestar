@@ -1,9 +1,9 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Solicitar Envío{% endblock %}
 
 {% block content %}
-<h1>Solicitar Envío</h1>
+<h1 id="principal">Solicitar Envío</h1>
 <form method="POST" action="{% url 'crear_paquete' %}">
     {% csrf_token %}
     <label for="direccion_origen">Dirección de Recolección:</label>

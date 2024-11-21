@@ -1,9 +1,9 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Rastrear Paquete{% endblock %}
 
 {% block content %}
-<h1>Rastrear Paquete</h1>
+<h1 id="principal">Rastrear Paquete</h1>
 <form method="POST" action="{% url 'rastreo_paquete' %}">
     {% csrf_token %}
     <label for="codigo">Número de Rastreo:</label>
