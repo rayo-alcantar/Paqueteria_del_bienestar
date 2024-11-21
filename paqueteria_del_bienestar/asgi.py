@@ -1,5 +1,5 @@
 """
-ASGI config for paquetería_del_bienestar project.
+ASGI config for paqueteria_del_bienestar project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'paquetería_del_bienestar.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'paqueteria_del_bienestar.settings')
 
 application = get_asgi_application()

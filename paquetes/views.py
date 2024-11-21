@@ -8,7 +8,7 @@ import uuid
 
 # Vista para la página principal
 def index(request):
-	return render(request, 'paquetes/index.html')
+	return render(request, 'index.html')  # Cambiado para que apunte a "templates/index.html"
 
 # Vista para rastrear paquete
 def rastrear_paquete(request):
@@ -32,7 +32,6 @@ def solicitar_envio(request):
 		estado_destino_id = request.POST.get("estado_destino")
 		
 		try:
-			# Crear el paquete
 			estado_origen = Estado.objects.get(pk=estado_origen_id)
 			estado_destino = Estado.objects.get(pk=estado_destino_id)
 			codigo = str(uuid.uuid4()).replace("-", "").upper()[:10]  # Código robusto
@@ -43,7 +42,6 @@ def solicitar_envio(request):
 				estado_actual=estado_origen,
 			)
 
-			# Generar rutas automáticamente
 			frases = Frase.objects.all()
 			Ruta.objects.create(
 				paquete=paquete,
@@ -69,7 +67,6 @@ def solicitar_envio(request):
 				estado_destino=estado_destino,
 			)
 
-			# Devolver el número de rastreo
 			return render(request, 'paquetes/solicitar_envio.html', {"codigo": codigo, "success": True})
 		except Exception as e:
 			error = f"Hubo un error al procesar tu solicitud: {e}"
@@ -84,9 +81,6 @@ def acerca_de(request):
 # API Views
 
 class CrearPaqueteView(APIView):
-	"""
-	Vista para crear un paquete, generar su ruta y asignar el número de rastreo.
-	"""
 	def post(self, request, *args, **kwargs):
 		serializer = PaqueteSerializer(data=request.data)
 		if serializer.is_valid():
