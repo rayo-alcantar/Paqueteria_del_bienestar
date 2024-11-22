@@ -23,23 +23,21 @@ def rastrear_paquete(request):
 			ruta_actual = next((ruta for ruta in rutas if ruta.activo), None)
 
 			if ruta_actual:
-				# Desactivar la ruta actual
-				ruta_actual.activo = False
-				ruta_actual.save()
-
-				# Buscar la siguiente ruta en la lista
+				# Calcular tiempo de transición basado en distancia ficticia
 				siguiente_ruta = next((ruta for ruta in rutas if ruta.orden > ruta_actual.orden), None)
 
 				if siguiente_ruta:
-					# Calcular tiempo de transición basado en distancia ficticia
 					distancia_ficticia = (
-						abs(siguiente_ruta.estado_origen.latitud - siguiente_ruta.estado_destino.latitud) +
-						abs(siguiente_ruta.estado_origen.longitud - siguiente_ruta.estado_destino.longitud)
+						abs(ruta_actual.estado_destino.latitud - siguiente_ruta.estado_destino.latitud) +
+						abs(ruta_actual.estado_destino.longitud - siguiente_ruta.estado_destino.longitud)
 					)
-					tiempo_transicion = timedelta(minutes=5 + distancia_ficticia * 5)
+					tiempo_transicion = timedelta(minutes=5 + distancia_ficticia * 2)
 
-					# Activar la siguiente ruta solo si ha pasado el tiempo de transición
+					# Activar la siguiente ruta solo si ha pasado el tiempo necesario
 					if now() >= ruta_actual.fecha_actualizacion + tiempo_transicion:
+						ruta_actual.activo = False
+						ruta_actual.save()
+
 						siguiente_ruta.activo = True
 						siguiente_ruta.fecha_actualizacion = now()
 						siguiente_ruta.save()
@@ -54,7 +52,7 @@ def rastrear_paquete(request):
 					paquete.save()
 
 			else:
-				# Si no hay ruta activa, activar la primera
+				# Si no hay ruta activa, activar la primera ruta
 				primera_ruta = rutas[0] if rutas else None
 				if primera_ruta:
 					primera_ruta.activo = True
@@ -104,7 +102,7 @@ def solicitar_envio(request):
 			estado_destino = get_object_or_404(Estado, pk=estado_destino_id)
 
 			# Crear el paquete
-			codigo = str(uuid.uuid4()).replace("-", "").upper()[:12]  # Código robusto
+			codigo = str(uuid.uuid4()).replace("-", "").upper()[:12]
 			paquete = Paquete.objects.create(
 				codigo=codigo,
 				remitente=remitente,
@@ -116,45 +114,49 @@ def solicitar_envio(request):
 				estado_actual=estado_origen,
 			)
 
-			# Crear rutas
+			# Crear rutas realistas
 			frases = Frase.objects.all()
 			orden = 1
+			rutas = []
 
-			# Ruta inicial
-			Ruta.objects.create(
+			# Ruta inicial (de recolección)
+			rutas.append(Ruta(
 				paquete=paquete,
-				frase=frases[0],  # Frase inicial
+				frase=frases[0],  # Frase inicial (Ejemplo: "Recolectado")
 				estado_origen=estado_origen,
-				estado_destino=estado_origen,  # Misma dirección para comenzar
+				estado_destino=estado_origen,
 				orden=orden,
-				activo=True,  # Primera ruta activa de inmediato
-			)
+				activo=True,  # Primera ruta activa
+			))
 			orden += 1
 
-			# Rutas intermedias y final
+			# Crear rutas intermedias si hay un cambio de región
 			if estado_origen.region != estado_destino.region:
 				estados_intermedios = Estado.objects.filter(
 					region__in=["Centro", "Norte", "Sur"]
-				).exclude(pk__in=[estado_origen.pk, estado_destino.pk])[:3]
+				).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct()
 
-				for estado in estados_intermedios:
-					Ruta.objects.create(
+				for estado in estados_intermedios[:3]:  # Limitar a 3 estados intermedios
+					rutas.append(Ruta(
 						paquete=paquete,
-						frase=frases[1],  # Frase intermedia
+						frase=frases[1],  # Frase intermedia (Ejemplo: "En tránsito")
 						estado_origen=estado_origen,
 						estado_destino=estado,
 						orden=orden,
-					)
+					))
+					estado_origen = estado
 					orden += 1
 
 			# Ruta final
-			Ruta.objects.create(
+			rutas.append(Ruta(
 				paquete=paquete,
-				frase=frases[2],  # Frase final
-				estado_origen=estado_destino,
+				frase=frases[2],  # Frase final (Ejemplo: "Entregado")
+				estado_origen=estado_origen,
 				estado_destino=estado_destino,
 				orden=orden,
-			)
+			))
+
+			Ruta.objects.bulk_create(rutas)
 
 			return render(
 				request,
@@ -162,7 +164,7 @@ def solicitar_envio(request):
 				{
 					"success": True,
 					"codigo": paquete.codigo,
-					"estado_origen": estado_origen.nombre,
+					"estado_origen": paquete.estado_actual.nombre,
 					"estado_destino": estado_destino.nombre,
 					"peso": paquete.peso,
 					"descripcion": paquete.descripcion,
