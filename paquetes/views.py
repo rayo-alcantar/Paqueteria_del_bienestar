@@ -1,31 +1,81 @@
-﻿from django.shortcuts import render
+﻿from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from .models import Paquete, Estado, Ruta, Frase
+from django.utils.timezone import now
+from datetime import timedelta
 import uuid
+
 
 # Vista para la página principal
 def index(request):
 	return render(request, 'index.html')  # Apunta a "templates/index.html"
+
 
 # Vista para rastrear paquete
 def rastrear_paquete(request):
 	if request.method == "POST":
 		codigo = request.POST.get("codigo")
 		try:
-			paquete = Paquete.objects.get(codigo=codigo)
-			rutas = Ruta.objects.filter(paquete=paquete)
+			paquete = get_object_or_404(Paquete, codigo=codigo)
+			rutas = list(Ruta.objects.filter(paquete=paquete).order_by("orden"))
+
+			# Identificar la ruta activa actual
+			ruta_actual = next((ruta for ruta in rutas if ruta.activo), None)
+
+			if ruta_actual:
+				# Desactivar la ruta actual
+				ruta_actual.activo = False
+				ruta_actual.save()
+
+				# Buscar la siguiente ruta en la lista
+				siguiente_ruta = next((ruta for ruta in rutas if ruta.orden > ruta_actual.orden), None)
+
+				if siguiente_ruta:
+					# Calcular tiempo de transición basado en distancia ficticia
+					distancia_ficticia = (
+						abs(siguiente_ruta.estado_origen.latitud - siguiente_ruta.estado_destino.latitud) +
+						abs(siguiente_ruta.estado_origen.longitud - siguiente_ruta.estado_destino.longitud)
+					)
+					tiempo_transicion = timedelta(minutes=5 + distancia_ficticia * 5)
+
+					# Activar la siguiente ruta solo si ha pasado el tiempo de transición
+					if now() >= ruta_actual.fecha_actualizacion + tiempo_transicion:
+						siguiente_ruta.activo = True
+						siguiente_ruta.fecha_actualizacion = now()
+						siguiente_ruta.save()
+
+						# Actualizar el estado del paquete
+						paquete.estado_actual = siguiente_ruta.estado_destino
+						paquete.save()
+				else:
+					# Si no hay más rutas, marcar el paquete como entregado
+					paquete.estado_paquete = "Entregado"
+					paquete.fecha_entrega = now()
+					paquete.save()
+
+			else:
+				# Si no hay ruta activa, activar la primera
+				primera_ruta = rutas[0] if rutas else None
+				if primera_ruta:
+					primera_ruta.activo = True
+					primera_ruta.fecha_actualizacion = now()
+					primera_ruta.save()
+
 			return render(
 				request,
-				'rastreo_paquete.html',
+				"rastreo_paquete.html",
 				{
 					"paquete": paquete,
 					"rutas": rutas,
 				},
 			)
+
 		except Paquete.DoesNotExist:
 			error = "El número de rastreo ingresado no existe."
-			return render(request, 'rastreo_paquete.html', {"error": error})
-	return render(request, 'rastreo_paquete.html')  # Apunta a "templates/rastreo_paquete.html"
+			return render(request, "rastreo_paquete.html", {"error": error})
+
+	return render(request, "rastreo_paquete.html")
+
 
 # Vista para solicitar envío
 @transaction.atomic
@@ -50,8 +100,8 @@ def solicitar_envio(request):
 			if peso <= 0:
 				raise ValueError("El peso del paquete debe ser un número positivo.")
 
-			estado_origen = Estado.objects.get(pk=estado_origen_id)
-			estado_destino = Estado.objects.get(pk=estado_destino_id)
+			estado_origen = get_object_or_404(Estado, pk=estado_origen_id)
+			estado_destino = get_object_or_404(Estado, pk=estado_destino_id)
 
 			# Crear el paquete
 			codigo = str(uuid.uuid4()).replace("-", "").upper()[:12]  # Código robusto
@@ -66,16 +116,22 @@ def solicitar_envio(request):
 				estado_actual=estado_origen,
 			)
 
-			# Crear rutas iniciales
+			# Crear rutas
 			frases = Frase.objects.all()
+			orden = 1
+
+			# Ruta inicial
 			Ruta.objects.create(
 				paquete=paquete,
-				frase=frases[0],  # Frase inicial (por ejemplo, "En recolección")
+				frase=frases[0],  # Frase inicial
 				estado_origen=estado_origen,
-				estado_destino=estado_destino,
+				estado_destino=estado_origen,  # Misma dirección para comenzar
+				orden=orden,
+				activo=True,  # Primera ruta activa de inmediato
 			)
+			orden += 1
 
-			# Crear rutas intermedias si es necesario
+			# Rutas intermedias y final
 			if estado_origen.region != estado_destino.region:
 				estados_intermedios = Estado.objects.filter(
 					region__in=["Centro", "Norte", "Sur"]
@@ -87,19 +143,22 @@ def solicitar_envio(request):
 						frase=frases[1],  # Frase intermedia
 						estado_origen=estado_origen,
 						estado_destino=estado,
+						orden=orden,
 					)
+					orden += 1
 
-			# Crear la ruta final
+			# Ruta final
 			Ruta.objects.create(
 				paquete=paquete,
-				frase=frases[2],  # Frase final (por ejemplo, "Entregado")
-				estado_origen=estado_origen,
+				frase=frases[2],  # Frase final
+				estado_origen=estado_destino,
 				estado_destino=estado_destino,
+				orden=orden,
 			)
 
 			return render(
 				request,
-				'solicitar_envio.html',
+				"solicitar_envio.html",
 				{
 					"success": True,
 					"codigo": paquete.codigo,
@@ -120,10 +179,11 @@ def solicitar_envio(request):
 			error = str(ve)
 		except Exception as e:
 			error = f"Hubo un error al procesar tu solicitud: {e}"
-		return render(request, 'solicitar_envio.html', {"error": error, "estados": estados})
+		return render(request, "solicitar_envio.html", {"error": error, "estados": estados})
 
-	return render(request, 'solicitar_envio.html', {"estados": estados})
+	return render(request, "solicitar_envio.html", {"estados": estados})
+
 
 # Vista "Acerca de"
 def acerca_de(request):
-	return render(request, 'acerca_de.html')  # Apunta a "templates/acerca_de.html"
+	return render(request, "acerca_de.html")  # Apunta a "templates/acerca_de.html"

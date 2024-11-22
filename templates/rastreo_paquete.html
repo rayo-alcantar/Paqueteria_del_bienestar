@@ -45,7 +45,7 @@
         </tr>
         <tr>
             <th>Estado de Origen</th>
-            <td>{{ paquete.estado_actual }}</td>
+            <td>{{ paquete.estado_actual.nombre }}</td>
         </tr>
         <tr>
             <th>Estado Actual</th>
@@ -68,7 +68,12 @@
     <h3>Ruta del Paquete</h3>
     <ul>
         {% for ruta in rutas %}
-        <li>{{ ruta.frase.frase }} - {{ ruta.estado_origen.nombre }} a {{ ruta.estado_destino.nombre }} ({{ ruta.fecha_actualizacion }})</li>
+        <li>
+            <strong>{{ ruta.frase.frase }}</strong> - 
+            De <em>{{ ruta.estado_origen.nombre }}</em> a 
+            <em>{{ ruta.estado_destino.nombre }}</em> 
+            (Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }})
+        </li>
         {% endfor %}
     </ul>
 {% endif %}

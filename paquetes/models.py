@@ -53,17 +53,19 @@ class Paquete(models.Model):
 class Ruta(models.Model):
 	paquete = models.ForeignKey(
 		Paquete, on_delete=models.CASCADE, related_name="rutas"
-	)  # Relación con el paquete
+	)
 	frase = models.ForeignKey(
 		Frase, on_delete=models.CASCADE, related_name="rutas"
-	)  # Frase utilizada para describir el paso de la ruta
+	)
 	estado_origen = models.ForeignKey(
 		Estado, on_delete=models.CASCADE, related_name="rutas_origen"
-	)  # Estado de origen de la ruta
+	)
 	estado_destino = models.ForeignKey(
 		Estado, on_delete=models.CASCADE, related_name="rutas_destino"
-	)  # Estado de destino de la ruta
-	fecha_actualizacion = models.DateTimeField(auto_now_add=True)  # Fecha de actualización de la ruta
+	)
+	fecha_actualizacion = models.DateTimeField(auto_now_add=True)
+	orden = models.PositiveIntegerField(default=0)  # Nuevo: orden lógico de la ruta
+	activo = models.BooleanField(default=False)  # Nuevo: indica si es el estado actual
 
 	def __str__(self):
 		return f"Ruta: {self.estado_origen} -> {self.estado_destino} | Paquete: {self.paquete.codigo}"
