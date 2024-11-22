@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1 id="principal">Solicitar Envío</h1>
-<form method="POST" action="{% url 'crear_paquete' %}">
+<form method="POST" action="{% url 'solicitar_envio' %}">
     {% csrf_token %}
     <label for="direccion_origen">Dirección de Recolección:</label>
     <input type="text" id="direccion_origen" name="direccion_origen" required>
@@ -39,6 +39,30 @@
 </form>
 
 {% if codigo %}
-    <p>¡Tu número de rastreo es: <strong>{{ codigo }}</strong>!</p>
+    <h2>Detalles del Paquete</h2>
+    <table>
+        <tr>
+            <th>Número de Rastreo</th>
+            <td>{{ codigo }}</td>
+        </tr>
+        <tr>
+            <th>Estado de Origen</th>
+            <td>{{ estado_origen }}</td>
+        </tr>
+        <tr>
+            <th>Estado de Destino</th>
+            <td>{{ estado_destino }}</td>
+        </tr>
+        <tr>
+            <th>Peso</th>
+            <td>{{ peso }} kg</td>
+        </tr>
+        <tr>
+            <th>Descripción</th>
+            <td>{{ descripcion }}</td>
+        </tr>
+    </table>
+{% elif error %}
+    <p style="color: red;">{{ error }}</p>
 {% endif %}
 {% endblock %}

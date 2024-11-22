@@ -1,19 +1,7 @@
 ﻿from django.urls import path
 from . import views
-from .views import (
-	CrearPaqueteView,
-	DetallePaqueteView,
-	ListarPaquetesView,
-	RutasPaqueteView,
-)
 
 urlpatterns = [
-	# Rutas del backend (API)
-	path("api/paquetes/", CrearPaqueteView.as_view(), name="crear_paquete"),  # Nombre consistente con las plantillas
-	path("api/paquetes/<str:codigo>/", DetallePaqueteView.as_view(), name="detalle_paquete"),
-	path("api/paquetes/listar/", ListarPaquetesView.as_view(), name="listar_paquetes"),
-	path("api/paquetes/<str:codigo>/rutas/", RutasPaqueteView.as_view(), name="rutas_paquete"),
-	
 	# Rutas para los templates
 	path('', views.index, name='index'),  # Página principal
 	path('rastreo-paquete/', views.rastrear_paquete, name='rastreo_paquete'),  # Página de rastreo de paquete
