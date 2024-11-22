@@ -76,13 +76,11 @@ def solicitar_envio(request):
 				request,
 				'solicitar_envio.html',
 				{
-					"codigo": codigo,
-					"paquete": {
-						"estado_origen": estado_origen.nombre,
-						"estado_destino": estado_destino.nombre,
-						"peso": peso,
-						"descripcion": descripcion,
-					},
+					"codigo": paquete.codigo,
+					"estado_origen": estado_origen.nombre,
+					"estado_destino": estado_destino.nombre,
+					"peso": paquete.peso,
+					"descripcion": paquete.descripcion,
 					"success": True,
 					"estados": estados,
 				},
