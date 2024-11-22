@@ -7,7 +7,12 @@
 <form method="POST" action="{% url 'rastreo_paquete' %}">
     {% csrf_token %}
     <label for="codigo">Número de Rastreo:</label>
-    <input type="text" id="codigo" name="codigo" required>
+    <input 
+        type="text" 
+        id="codigo" 
+        name="codigo" 
+        placeholder="Ingrese el número de rastreo" 
+        required>
     <button type="submit">Buscar Paquete</button>
 </form>
 
@@ -19,23 +24,51 @@
     <h2>Información del Paquete</h2>
     <table>
         <tr>
-            <th>Estado de Origen</th>
-            <th>Estado de Destino</th>
-            <th>Estado Actual</th>
-            <th>Estado del Paquete</th>
+            <th>Número de Rastreo</th>
+            <td>{{ paquete.codigo }}</td>
         </tr>
         <tr>
-            <td>{{ paquete.estado_origen }}</td>
-            <td>{{ paquete.estado_destino }}</td>
+            <th>Nombre del Receptor</th>
+            <td>{{ paquete.receptor }}</td>
+        </tr>
+        <tr>
+            <th>Dirección de Entrega</th>
+            <td>{{ paquete.direccion_entrega }}</td>
+        </tr>
+        <tr>
+            <th>Nombre del Remitente</th>
+            <td>{{ paquete.remitente }}</td>
+        </tr>
+        <tr>
+            <th>Dirección de Recolección</th>
+            <td>{{ paquete.direccion_recoleccion }}</td>
+        </tr>
+        <tr>
+            <th>Estado de Origen</th>
             <td>{{ paquete.estado_actual }}</td>
+        </tr>
+        <tr>
+            <th>Estado Actual</th>
+            <td>{{ paquete.estado_actual.nombre }}</td>
+        </tr>
+        <tr>
+            <th>Estado del Paquete</th>
             <td>{{ paquete.estado_paquete }}</td>
+        </tr>
+        <tr>
+            <th>Peso</th>
+            <td>{{ paquete.peso }} kg</td>
+        </tr>
+        <tr>
+            <th>Descripción</th>
+            <td>{{ paquete.descripcion }}</td>
         </tr>
     </table>
 
     <h3>Ruta del Paquete</h3>
     <ul>
         {% for ruta in rutas %}
-        <li>{{ ruta.frase }} ({{ ruta.fecha_actualizacion }})</li>
+        <li>{{ ruta.frase.frase }} - {{ ruta.estado_origen.nombre }} a {{ ruta.estado_destino.nombre }} ({{ ruta.fecha_actualizacion }})</li>
         {% endfor %}
     </ul>
 {% endif %}
