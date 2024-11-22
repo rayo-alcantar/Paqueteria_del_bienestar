@@ -25,12 +25,13 @@ def rastrear_paquete(request):
 
 # Vista para solicitar envío
 def solicitar_envio(request):
+	estados = Estado.objects.all()  # Recuperar todos los estados de la base de datos
 	if request.method == "POST":
 		descripcion = request.POST.get("descripcion")
 		peso = request.POST.get("peso")
-		estado_origen_id = request.POST.get("estado_origen")
-		estado_destino_id = request.POST.get("estado_destino")
-		
+		estado_origen_id = request.POST.get("estado_origen_id")
+		estado_destino_id = request.POST.get("estado_destino_id")
+
 		try:
 			estado_origen = Estado.objects.get(pk=estado_origen_id)
 			estado_destino = Estado.objects.get(pk=estado_destino_id)
@@ -67,12 +68,12 @@ def solicitar_envio(request):
 				estado_destino=estado_destino,
 			)
 
-			return render(request, 'solicitar_envio.html', {"codigo": codigo, "success": True})
+			return render(request, 'solicitar_envio.html', {"codigo": codigo, "success": True, "estados": estados})
 		except Exception as e:
 			error = f"Hubo un error al procesar tu solicitud: {e}"
-			return render(request, 'solicitar_envio.html', {"error": error})
+			return render(request, 'solicitar_envio.html', {"error": error, "estados": estados})
 
-	return render(request, 'solicitar_envio.html')  # Apunta a "templates/solicitar_envio.html"
+	return render(request, 'solicitar_envio.html', {"estados": estados})  # Incluye los estados siempre
 
 # Vista "Acerca de"
 def acerca_de(request):
