@@ -5,114 +5,141 @@
 {% block content %}
 <h1 id="principal">Solicitar Envío</h1>
 <form method="POST" action="{% url 'solicitar_envio' %}">
-    {% csrf_token %}
-    
-    <label for="nombre_emisor">Nombre del Remitente:</label>
-    <input 
-        type="text" 
-        id="nombre_emisor" 
-        name="remitente" 
-        placeholder="Nombre completo del remitente" 
-        required>
-    
-    <label for="direccion_recoleccion">Dirección de Recolección:</label>
-    <textarea 
-        id="direccion_recoleccion" 
-        name="direccion_recoleccion" 
-        placeholder="Dirección completa para recoger el paquete" 
-        required></textarea>
+	{% csrf_token %}
+	
+	<label for="nombre_emisor">Nombre del Remitente:</label>
+	<input 
+		type="text" 
+		id="nombre_emisor" 
+		name="remitente" 
+		placeholder="Nombre completo del remitente" 
+		value="{{ form_data.remitente|default_if_none:'' }}"
+		required>
+	{% if errors.remitente %}
+		<p style="color: red;">{{ errors.remitente }}</p>
+	{% endif %}
+	
+	<label for="direccion_recoleccion">Dirección de Recolección:</label>
+	<textarea 
+		id="direccion_recoleccion" 
+		name="direccion_recoleccion" 
+		placeholder="Dirección completa para recoger el paquete" 
+		required>{{ form_data.direccion_recoleccion|default_if_none:'' }}</textarea>
+	{% if errors.direccion_recoleccion %}
+		<p style="color: red;">{{ errors.direccion_recoleccion }}</p>
+	{% endif %}
 
-    <label for="estado_origen">Estado de Origen:</label>
-    <select id="estado_origen" name="estado_origen_id" required>
-        <option value="" disabled selected>Seleccione un estado</option>
-        {% for estado in estados %}
-        <option value="{{ estado.id }}">{{ estado.nombre }}</option>
-        {% endfor %}
-    </select>
+	<label for="estado_origen">Estado de Origen:</label>
+	<select id="estado_origen" name="estado_origen_id" required>
+		<option value="" disabled {% if not form_data.estado_origen_id %}selected{% endif %}>Seleccione un estado</option>
+		{% for estado in estados %}
+		<option value="{{ estado.id }}" {% if form_data.estado_origen_id == estado.id|stringformat:"s" %}selected{% endif %}>{{ estado.nombre }}</option>
+		{% endfor %}
+	</select>
+	{% if errors.estado_origen_id %}
+		<p style="color: red;">{{ errors.estado_origen_id }}</p>
+	{% endif %}
 
-    <label for="nombre_receptor">Nombre del Receptor:</label>
-    <input 
-        type="text" 
-        id="nombre_receptor" 
-        name="receptor" 
-        placeholder="Nombre completo del receptor" 
-        required>
-    
-    <label for="direccion_entrega">Dirección de Entrega:</label>
-    <textarea 
-        id="direccion_entrega" 
-        name="direccion_entrega" 
-        placeholder="Dirección completa para entregar el paquete" 
-        required></textarea>
+	<label for="nombre_receptor">Nombre del Receptor:</label>
+	<input 
+		type="text" 
+		id="nombre_receptor" 
+		name="receptor" 
+		placeholder="Nombre completo del receptor" 
+		value="{{ form_data.receptor|default_if_none:'' }}"
+		required>
+	{% if errors.receptor %}
+		<p style="color: red;">{{ errors.receptor }}</p>
+	{% endif %}
+	
+	<label for="direccion_entrega">Dirección de Entrega:</label>
+	<textarea 
+		id="direccion_entrega" 
+		name="direccion_entrega" 
+		placeholder="Dirección completa para entregar el paquete" 
+		required>{{ form_data.direccion_entrega|default_if_none:'' }}</textarea>
+	{% if errors.direccion_entrega %}
+		<p style="color: red;">{{ errors.direccion_entrega }}</p>
+	{% endif %}
 
-    <label for="estado_destino">Estado de Destino:</label>
-    <select id="estado_destino" name="estado_destino_id" required>
-        <option value="" disabled selected>Seleccione un estado</option>
-        {% for estado in estados %}
-        <option value="{{ estado.id }}">{{ estado.nombre }}</option>
-        {% endfor %}
-    </select>
+	<label for="estado_destino">Estado de Destino:</label>
+	<select id="estado_destino" name="estado_destino_id" required>
+		<option value="" disabled {% if not form_data.estado_destino_id %}selected{% endif %}>Seleccione un estado</option>
+		{% for estado in estados %}
+		<option value="{{ estado.id }}" {% if form_data.estado_destino_id == estado.id|stringformat:"s" %}selected{% endif %}>{{ estado.nombre }}</option>
+		{% endfor %}
+	</select>
+	{% if errors.estado_destino_id %}
+		<p style="color: red;">{{ errors.estado_destino_id }}</p>
+	{% endif %}
 
-    <label for="peso">Peso del Paquete (kg):</label>
-    <input 
-        type="number" 
-        id="peso" 
-        name="peso" 
-        step="0.1" 
-        placeholder="Ingrese el peso en kilogramos" 
-        required>
+	<label for="peso">Peso del Paquete (kg):</label>
+	<input 
+		type="number" 
+		id="peso" 
+		name="peso" 
+		step="0.1" 
+		placeholder="Ingrese el peso en kilogramos" 
+		value="{{ form_data.peso|default_if_none:'' }}"
+		required>
+	{% if errors.peso %}
+		<p style="color: red;">{{ errors.peso }}</p>
+	{% endif %}
 
-    <label for="descripcion">Descripción del Paquete:</label>
-    <textarea 
-        id="descripcion" 
-        name="descripcion" 
-        placeholder="Describa el contenido del paquete" 
-        required></textarea>
+	<label for="descripcion">Descripción del Paquete:</label>
+	<textarea 
+		id="descripcion" 
+		name="descripcion" 
+		placeholder="Describa el contenido del paquete" 
+		required>{{ form_data.descripcion|default_if_none:'' }}</textarea>
+	{% if errors.descripcion %}
+		<p style="color: red;">{{ errors.descripcion }}</p>
+	{% endif %}
 
-    <button type="submit">Solicitar Recolección</button>
+	<button type="submit">Solicitar Recolección</button>
 </form>
 
 {% if codigo %}
-    <h2>Detalles del Paquete</h2>
-    <table>
-        <tr>
-            <th>Número de Rastreo</th>
-            <td>{{ codigo }}</td>
-        </tr>
-        <tr>
-            <th>Estado de Origen</th>
-            <td>{{ estado_origen }}</td>
-        </tr>
-        <tr>
-            <th>Estado de Destino</th>
-            <td>{{ estado_destino }}</td>
-        </tr>
-        <tr>
-            <th>Peso</th>
-            <td>{{ peso }} kg</td>
-        </tr>
-        <tr>
-            <th>Descripción</th>
-            <td>{{ descripcion }}</td>
-        </tr>
-        <tr>
-            <th>Nombre del Receptor</th>
-            <td>{{ receptor }}</td>
-        </tr>
-        <tr>
-            <th>Dirección de Entrega</th>
-            <td>{{ direccion_entrega }}</td>
-        </tr>
-        <tr>
-            <th>Nombre del Remitente</th>
-            <td>{{ remitente }}</td>
-        </tr>
-        <tr>
-            <th>Dirección de Recolección</th>
-            <td>{{ direccion_recoleccion }}</td>
-        </tr>
-    </table>
+	<h2>Detalles del Paquete</h2>
+	<table>
+		<tr>
+			<th>Número de Rastreo</th>
+			<td>{{ codigo }}</td>
+		</tr>
+		<tr>
+			<th>Estado de Origen</th>
+			<td>{{ estado_origen }}</td>
+		</tr>
+		<tr>
+			<th>Estado de Destino</th>
+			<td>{{ estado_destino }}</td>
+		</tr>
+		<tr>
+			<th>Peso</th>
+			<td>{{ peso }} kg</td>
+		</tr>
+		<tr>
+			<th>Descripción</th>
+			<td>{{ descripcion }}</td>
+		</tr>
+		<tr>
+			<th>Nombre del Receptor</th>
+			<td>{{ receptor }}</td>
+		</tr>
+		<tr>
+			<th>Dirección de Entrega</th>
+			<td>{{ direccion_entrega }}</td>
+		</tr>
+		<tr>
+			<th>Nombre del Remitente</th>
+			<td>{{ remitente }}</td>
+		</tr>
+		<tr>
+			<th>Dirección de Recolección</th>
+			<td>{{ direccion_recoleccion }}</td>
+		</tr>
+	</table>
 {% elif error %}
-    <p style="color: red;">{{ error }}</p>
+	<p style="color: red;">{{ error }}</p>
 {% endif %}
 {% endblock %}

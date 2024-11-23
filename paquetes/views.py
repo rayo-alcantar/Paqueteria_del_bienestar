@@ -1,4 +1,6 @@
-﻿from django.shortcuts import render, get_object_or_404
+﻿import traceback
+import random  # Importar el módulo random
+from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from .models import Paquete, Estado, Ruta, Frase
 from django.utils.timezone import now
@@ -109,8 +111,10 @@ def rastrear_paquete(request):
 # Vista para solicitar envío
 @transaction.atomic
 def solicitar_envio(request):
-	estados = Estado.objects.all()  # Recuperar todos los estados de la base de datos
+	estados = Estado.objects.all()
 	if request.method == "POST":
+		errors = {}
+		form_data = request.POST.copy()
 		try:
 			descripcion = request.POST.get("descripcion")
 			peso = request.POST.get("peso")
@@ -122,12 +126,34 @@ def solicitar_envio(request):
 			estado_destino_id = request.POST.get("estado_destino_id")
 
 			# Validar entrada de datos
-			if not all([descripcion, peso, remitente, direccion_recoleccion, receptor, direccion_entrega, estado_origen_id, estado_destino_id]):
-				raise ValueError("Todos los campos son obligatorios.")
+			if not descripcion:
+				errors['descripcion'] = "La descripción es obligatoria."
+			if not peso:
+				errors['peso'] = "El peso es obligatorio."
+			else:
+				try:
+					peso = float(peso)
+					if peso <= 0:
+						errors['peso'] = "El peso debe ser un número positivo."
+				except ValueError:
+					errors['peso'] = "El peso debe ser un número válido."
+			if not remitente:
+				errors['remitente'] = "El nombre del remitente es obligatorio."
+			if not direccion_recoleccion:
+				errors['direccion_recoleccion'] = "La dirección de recolección es obligatoria."
+			if not receptor:
+				errors['receptor'] = "El nombre del receptor es obligatorio."
+			if not direccion_entrega:
+				errors['direccion_entrega'] = "La dirección de entrega es obligatoria."
+			if not estado_origen_id:
+				errors['estado_origen_id'] = "Debe seleccionar un estado de origen."
+			if not estado_destino_id:
+				errors['estado_destino_id'] = "Debe seleccionar un estado de destino."
+			elif estado_origen_id == estado_destino_id:
+				errors['estado_destino_id'] = "El estado de destino debe ser diferente al estado de origen."
 
-			peso = float(peso)
-			if peso <= 0:
-				raise ValueError("El peso del paquete debe ser un número positivo.")
+			if errors:
+				raise ValueError("Hay errores en el formulario.")
 
 			estado_origen = get_object_or_404(Estado, pk=estado_origen_id)
 			estado_destino = get_object_or_404(Estado, pk=estado_destino_id)
@@ -148,6 +174,11 @@ def solicitar_envio(request):
 
 			# Crear rutas realistas
 			frases = Frase.objects.all()
+			if not frases.exists():
+				raise Exception("No hay frases disponibles en la base de datos.")
+
+			frases_list = list(frases)
+			num_frases = len(frases_list)
 			orden = 1
 			rutas = []
 
@@ -156,18 +187,22 @@ def solicitar_envio(request):
 			# Rutas intermedias
 			if estado_origen.region != estado_destino.region:
 				# Seleccionar estados intermedios lógicos
-				estados_intermedios = Estado.objects.filter(
+				estados_intermedios = list(Estado.objects.filter(
 					region__in=["Centro", "Norte", "Sur"]
-				).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct().order_by('?')[:1]  # Limitar a 1 estado intermedio aleatorio
+				).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
 
-				estados_ruta.extend(estados_intermedios)
+				if estados_intermedios:
+					estado_intermedio = random.choice(estados_intermedios)
+					estados_ruta.append(estado_intermedio)
+
 			estados_ruta.append(estado_destino)
 
 			# Crear rutas basadas en los estados de la ruta
 			for i in range(len(estados_ruta) - 1):
 				estado_origen_ruta = estados_ruta[i]
 				estado_destino_ruta = estados_ruta[i + 1]
-				frase = frases[orden - 1] if orden - 1 < len(frases) else frases.last()
+				frase_index = orden - 1 if orden - 1 < num_frases else num_frases - 1
+				frase = frases_list[frase_index]
 				ruta = Ruta(
 					paquete=paquete,
 					frase=frase,
@@ -199,13 +234,22 @@ def solicitar_envio(request):
 					"estados": estados,
 				},
 			)
-		except Estado.DoesNotExist:
-			error = "Alguno de los estados seleccionados no existe."
-		except ValueError as ve:
-			error = str(ve)
+		except ValueError:
+			# Enviamos los errores específicos al template
+			return render(request, "solicitar_envio.html", {
+				"errors": errors,
+				"estados": estados,
+				"form_data": form_data,
+			})
 		except Exception as e:
 			error = f"Hubo un error al procesar tu solicitud: {e}"
-		return render(request, "solicitar_envio.html", {"error": error, "estados": estados})
+			traceback_str = traceback.format_exc()
+			print(traceback_str)  # Imprime el traceback en la consola para depuración
+			return render(request, "solicitar_envio.html", {
+				"error": error,
+				"estados": estados,
+				"form_data": form_data,
+			})
 
 	return render(request, "solicitar_envio.html", {"estados": estados})
 
