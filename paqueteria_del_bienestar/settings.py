@@ -9,7 +9,7 @@ SECRET_KEY = '95gz=npbnhkvqss#bk-db_by#mz+*$xzeai9n$e0ww$i_v2y1%'
 # ¡No ejecutes con debug activado en producción!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['paqueteriabienestar.zapto.org']
 
 # Definición de aplicaciones
 INSTALLED_APPS = [
@@ -107,9 +107,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '95gz=npbnhkvqss#bk-db_by#mz+*$xzeai9n$e0ww$i_v2y1%'
 
 # ¡No ejecutes con debug activado en producción!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['paqueteriabienestar.zapto.org']
+
+
 
 # Definición de aplicaciones
 INSTALLED_APPS = [
@@ -206,3 +208,4 @@ REST_FRAMEWORK = {
 		'rest_framework.parsers.JSONParser',
 	),
 }
+STATIC_ROOT = BASE_DIR / 'staticfiles'
