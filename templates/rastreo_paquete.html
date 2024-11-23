@@ -37,16 +37,16 @@
                 <td>{{ paquete.remitente }}</td>
             </tr>
             <tr>
-                <th>Dirección de Recolección</th>
-                <td>{{ paquete.direccion_recoleccion }}</td>
-            </tr>
-            <tr>
                 <th>Receptor</th>
                 <td>{{ paquete.receptor }}</td>
             </tr>
             <tr>
-                <th>Dirección de Entrega</th>
-                <td>{{ paquete.direccion_entrega }}</td>
+                <th>Estado de Origen</th>
+                <td>{{ estado_origen.nombre }}</td>
+            </tr>
+            <tr>
+                <th>Estado de Destino</th>
+                <td>{{ estado_destino.nombre }}</td>
             </tr>
             <tr>
                 <th>Estado Actual</th>
@@ -94,6 +94,11 @@
         <div class="alert alert-success" role="alert">
             <strong>¡Paquete Entregado!</strong> El paquete ha sido entregado el {{ paquete.fecha_entrega|date:"d de F, Y H:i" }}.
         </div>
+        <form method="POST" action="{% url 'rastreo_paquete' %}">
+            {% csrf_token %}
+            <input type="hidden" name="codigo" value="{{ paquete.codigo }}">
+            <button type="submit" name="download_pdf" class="btn btn-success">Descargar Comprobante</button>
+        </form>
     {% endif %}
 {% endif %}
 

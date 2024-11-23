@@ -5,6 +5,12 @@ from django.utils.timezone import now
 from datetime import timedelta
 import uuid
 
+# Importaciones adicionales para generar PDFs
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from io import BytesIO
+from xhtml2pdf import pisa  # Asegúrate de instalar xhtml2pdf
+
 # Vista para la página principal
 def index(request):
 	return render(request, 'index.html')  # Apunta a "templates/index.html"
@@ -61,13 +67,37 @@ def rastrear_paquete(request):
 			else:
 				rutas_relevantes = [ruta for ruta in rutas if ruta.fecha_actualizacion]
 
+			# Obtener estados de origen y destino
+			estado_origen = rutas[0].estado_origen if rutas else None
+			estado_destino = rutas[-1].estado_destino if rutas else None
+
+			context = {
+				"paquete": paquete,
+				"rutas": rutas_relevantes,
+				"estado_origen": estado_origen,
+				"estado_destino": estado_destino,
+			}
+
+			# Si el paquete está entregado, generar PDF si se solicita
+			if paquete.estado_paquete == "Entregado" and 'download_pdf' in request.POST:
+				# Renderizar el template para el PDF
+				pdf_content = render_to_string('paquete_entregado_pdf.html', context)
+				response = HttpResponse(content_type='application/pdf')
+				response['Content-Disposition'] = f'attachment; filename="paquete_{paquete.codigo}.pdf"'
+
+				# Crear el PDF
+				pisa_status = pisa.CreatePDF(
+					pdf_content, dest=response
+				)
+
+				if pisa_status.err:
+					return HttpResponse('Error al generar el PDF', status=500)
+				return response
+
 			return render(
 				request,
 				"rastreo_paquete.html",
-				{
-					"paquete": paquete,
-					"rutas": rutas_relevantes,
-				},
+				context,
 			)
 
 		except Paquete.DoesNotExist:
@@ -158,7 +188,7 @@ def solicitar_envio(request):
 				{
 					"success": True,
 					"codigo": paquete.codigo,
-					"estado_origen": paquete.estado_actual.nombre,
+					"estado_origen": estado_origen.nombre,
 					"estado_destino": estado_destino.nombre,
 					"peso": paquete.peso,
 					"descripcion": paquete.descripcion,
