@@ -1,0 +1,29 @@
+﻿body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    background-color: #800000; /* Guinda */
+    box-shadow: 0 4px 6px -4px #000;
+}
+
+.navbar-brand, .nav-link {
+    color: #FFC0CB !important; /* Rosa */
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover, .navbar-brand:hover {
+    color: #FFFFFF !important;
+}
+
+.footer {
+    background-color: #800000; /* Guinda */
+    color: #FFC0CB;
+    padding: 10px 0;
+    box-shadow: 0 -4px 6px -4px #000;
+}
+
+footer p {
+    margin: 0;
+}
