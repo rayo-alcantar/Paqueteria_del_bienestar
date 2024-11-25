@@ -64,10 +64,23 @@ header .container {
 header .logo a {
     text-decoration: none;
     color: #FFFFFF;
-    font-size: 24px;
+    display: flex;
+    align-items: center;
+}
+
+/* Ajustes para el logo */
+.logo-img {
+    height: 30px; /* Tamaño reducido */
+    width: auto;
+    margin-right: 10px;
+}
+
+.logo-text {
+    font-size: 20px; /* Tamaño de fuente reducido */
     font-weight: bold;
 }
 
+/* Navegación */
 header nav ul {
     list-style: none;
     display: flex;
@@ -286,6 +299,95 @@ p {
     margin-top: 0;
 }
 
+/* Footer */
+footer {
+    background-color: #5A1631; /* Fondo guinda similar al header */
+    color: #FFFFFF;
+    padding: 20px 0;
+}
+
+footer .footer-container {
+    display: flex;
+    flex-direction: column; /* Apilar elementos verticalmente */
+    align-items: center; /* Centrar horizontalmente */
+    justify-content: center;
+    text-align: center;
+}
+
+.footer-info {
+    margin-bottom: 15px; /* Espaciado inferior */
+}
+
+.footer-info p {
+    margin-bottom: 10px;
+}
+
+.footer-links {
+    list-style: none;
+    display: flex;
+    justify-content: center; /* Centrar enlaces */
+    flex-wrap: wrap;
+    padding: 0;
+}
+
+.footer-links li {
+    margin: 0 10px; /* Espaciado entre enlaces */
+}
+
+.footer-links li a {
+    text-decoration: none;
+    color: #FFFFFF;
+    transition: color 0.3s;
+}
+
+.footer-links li a:hover {
+    color: #FFD700; /* Dorado al pasar el cursor */
+}
+
+.footer-social {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centrar iconos */
+    flex-wrap: wrap;
+}
+
+.footer-social a {
+    text-decoration: none;
+    color: #FFFFFF;
+    margin: 0 10px; /* Espaciado entre iconos */
+    display: flex;
+    align-items: center;
+    transition: color 0.3s;
+}
+
+.footer-social a:hover {
+    color: #FFD700; /* Dorado al pasar el cursor */
+}
+
+.footer-social i {
+    margin-right: 5px;
+}
+
+/* Botón específico para descargas */
+.btn-download {
+    background-color: #FF1493; /* Rosa profundo */
+    color: #FFFFFF;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    display: block;
+    margin: 20px auto 0;
+    transition: background-color 0.3s;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.btn-download:hover {
+    background-color: #C71585; /* Tonalidad más oscura de rosa */
+}
+
 /* Mensajes de Error */
 .error-message {
     color: #FF0000; /* Rojo para destacar errores */
@@ -315,26 +417,26 @@ p {
         margin: 10px 0;
     }
 
-    footer .footer-links ul {
-        flex-direction: column;
+    footer .footer-container {
+        align-items: center; /* Asegurar centrado en móviles */
     }
 
-    footer .footer-links ul li {
-        margin: 5px 0;
+    footer .footer-content {
+        flex-direction: column; /* Alinear en columna */
+        align-items: center; /* Centrar elementos */
+        text-align: center; /* Centrar texto */
     }
 
-    .timeline-item {
-        width: 100%;
-        left: 0 !important;
+    .footer-social {
+        justify-content: center; /* Centrar social icons */
+        margin-top: 15px;
     }
 
-    .timeline::before {
-        left: 20px;
+    .logo-img {
+        height: 25px; /* Tamaño aún más pequeño en móviles */
     }
 
-    .timeline-item::after {
-        left: 20px;
-        border: none;
-        border-left-color: #B22222;
+    .logo-text {
+        font-size: 18px; /* Tamaño de fuente reducido en móviles */
     }
 }
