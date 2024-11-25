@@ -32,7 +32,6 @@ MIDDLEWARE = [
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Evita usar caracteres especiales en nombres de módulos
 ROOT_URLCONF = 'paqueteria_del_bienestar.urls'
 
 # Configuración de plantillas
@@ -52,7 +51,6 @@ TEMPLATES = [
 	},
 ]
 
-# Evita usar caracteres especiales en nombres de módulos
 WSGI_APPLICATION = 'paqueteria_del_bienestar.wsgi.application'
 
 # Configuración de la base de datos
@@ -98,12 +96,10 @@ STATIC_URL = '/static/'
 # Definir STATIC_ROOT para que collectstatic recopile los archivos estáticos aquí
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Comenté STATICFILES_DIRS ya que en producción no es necesario a menos que tengas archivos estáticos adicionales
-# fuera de tus aplicaciones. Si tienes una carpeta 'static' en la raíz de tu proyecto con archivos que necesitas,
-# puedes descomentar y ajustar la siguiente línea.
-# STATICFILES_DIRS = [
-#	 BASE_DIR / "static",
-# ]
+# Configuración opcional: descomentar si tienes archivos estáticos adicionales fuera de tus apps
+STATICFILES_DIRS = [
+	BASE_DIR / "static",
+]
 
 # Configuración de Django REST Framework (si lo usas)
 REST_FRAMEWORK = {
