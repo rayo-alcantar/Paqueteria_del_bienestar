@@ -3,181 +3,220 @@
 {% block title %}Rastrear Paquete{% endblock %}
 
 {% block content %}
-<h1 id="principal">Rastrear Paquete</h1>
-<form method="POST" action="{% url 'rastreo_paquete' %}" class="tracking-form">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="codigo">Número de Rastreo:</label>
+
+<style>
+    /* Estilos personalizados */
+    body {
+        background-color: #8B0000; /* Guinda */
+        color: #FFFFFF;
+        font-family: Arial, sans-serif;
+    }
+    h1, h2, h3 {
+        text-align: center;
+        color: #FFC0CB; /* Rosa */
+    }
+    .container {
+        width: 80%;
+        margin: auto;
+        background-color: #B22222; /* Tonalidad de rojo */
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .tracking-form {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .tracking-form input[type="text"] {
+        width: 60%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+    }
+    .tracking-form button {
+        background-color: #FF0000; /* Rojo */
+        color: #FFFFFF;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .tracking-form button:hover {
+        background-color: #CD0000; /* Tonalidad más oscura de rojo */
+    }
+    .alert {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #FF6347; /* Tomato */
+        color: #FFFFFF;
+        border-radius: 5px;
+    }
+    .table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+        background-color: #B22222; /* Tonalidad de rojo */
+    }
+    .table th, .table td {
+        border: 1px solid #FFFFFF;
+        padding: 10px;
+        text-align: left;
+    }
+    .table th {
+        background-color: #CD5C5C; /* Tonalidad más clara de rojo */
+    }
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+        margin-top: 20px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #FFC0CB; /* Rosa */
+        transform: translateX(-50%);
+    }
+    .timeline-item {
+        position: relative;
+        width: 45%;
+        padding: 10px;
+        background-color: #B22222;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        color: #FFFFFF;
+    }
+    .timeline-item.left {
+        left: 0;
+    }
+    .timeline-item.right {
+        left: 55%;
+    }
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        width: 0;
+        height: 0;
+        border: 10px solid transparent;
+    }
+    .timeline-item.left::after {
+        right: -20px;
+        border-left-color: #B22222;
+    }
+    .timeline-item.right::after {
+        left: -20px;
+        border-right-color: #B22222;
+    }
+    .timeline-content h4 {
+        margin-top: 0;
+    }
+    .btn-download {
+        background-color: #FF1493; /* Rosa profundo */
+        color: #FFFFFF;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        display: block;
+        margin: 20px auto 0;
+    }
+    .btn-download:hover {
+        background-color: #C71585; /* Tonalidad más oscura de rosa */
+    }
+</style>
+
+<div class="container">
+    <h1 id="principal">Rastrear Paquete</h1>
+    <form method="POST" action="{% url 'rastreo_paquete' %}" class="tracking-form">
+        {% csrf_token %}
         <input 
             type="text" 
             id="codigo" 
             name="codigo" 
             placeholder="Ingrese el número de rastreo" 
             required>
-    </div>
-    <button type="submit" class="btn btn-primary">Buscar Paquete</button>
-</form>
+        <button type="submit">Buscar Paquete</button>
+    </form>
 
-{% if error %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-{% endif %}
-
-{% if paquete %}
-    <h2>Información del Paquete</h2>
-    <table class="table table-striped">
-        <tbody>
-            <tr>
-                <th>Número de Rastreo</th>
-                <td>{{ paquete.codigo }}</td>
-            </tr>
-            <tr>
-                <th>Remitente</th>
-                <td>{{ paquete.remitente }}</td>
-            </tr>
-            <tr>
-                <th>Receptor</th>
-                <td>{{ paquete.receptor }}</td>
-            </tr>
-            <tr>
-                <th>Estado de Origen</th>
-                <td>{{ estado_origen.nombre }}</td>
-            </tr>
-            <tr>
-                <th>Estado de Destino</th>
-                <td>{{ estado_destino.nombre }}</td>
-            </tr>
-            <tr>
-                <th>Estado Actual</th>
-                <td>{{ paquete.estado_actual.nombre }}</td>
-            </tr>
-            <tr>
-                <th>Estado del Paquete</th>
-                <td>{{ paquete.estado_paquete }}</td>
-            </tr>
-            <tr>
-                <th>Peso</th>
-                <td>{{ paquete.peso }} kg</td>
-            </tr>
-            <tr>
-                <th>Descripción</th>
-                <td>{{ paquete.descripcion }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h3>Ruta del Paquete</h3>
-    <div class="timeline">
-        {% for ruta in rutas %}
-            <div class="timeline-item {% if ruta.activo %}active{% endif %}">
-                <div class="timeline-icon">
-                    {% if ruta.activo %}
-                        <i class="fas fa-truck-moving"></i>
-                    {% else %}
-                        <i class="fas fa-check-circle"></i>
-                    {% endif %}
-                </div>
-                <div class="timeline-content">
-                    <h4>{{ ruta.frase.frase }}</h4>
-                    <p>
-                        De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
-                        <strong>{{ ruta.estado_destino.nombre }}</strong><br>
-                        <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
-                    </p>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
-    {% if paquete.estado_paquete == "Entregado" %}
-        <div class="alert alert-success" role="alert">
-            <strong>¡Paquete Entregado!</strong> El paquete ha sido entregado el {{ paquete.fecha_entrega|date:"d de F, Y H:i" }}.
+    {% if error %}
+        <div class="alert">
+            {{ error }}
         </div>
-        <form method="POST" action="{% url 'rastreo_paquete' %}">
-            {% csrf_token %}
-            <input type="hidden" name="codigo" value="{{ paquete.codigo }}">
-            <button type="submit" name="download_pdf" class="btn btn-success">Descargar Comprobante</button>
-        </form>
     {% endif %}
-{% endif %}
 
-<style>
-/* Estilos personalizados para mejorar la apariencia */
-.tracking-form {
-    margin-bottom: 20px;
-}
+    {% if paquete %}
+        <h2>Información del Paquete</h2>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th>Número de Rastreo</th>
+                    <td>{{ paquete.codigo }}</td>
+                </tr>
+                <tr>
+                    <th>Remitente</th>
+                    <td>{{ paquete.remitente }}</td>
+                </tr>
+                <tr>
+                    <th>Receptor</th>
+                    <td>{{ paquete.receptor }}</td>
+                </tr>
+                <tr>
+                    <th>Estado de Origen</th>
+                    <td>{{ estado_origen.nombre }}</td>
+                </tr>
+                <tr>
+                    <th>Estado de Destino</th>
+                    <td>{{ estado_destino.nombre }}</td>
+                </tr>
+                <tr>
+                    <th>Estado Actual</th>
+                    <td>{{ paquete.estado_actual.nombre }}</td>
+                </tr>
+                <tr>
+                    <th>Estado del Paquete</th>
+                    <td>{{ paquete.estado_paquete }}</td>
+                </tr>
+                <tr>
+                    <th>Peso</th>
+                    <td>{{ paquete.peso }} kg</td>
+                </tr>
+                <tr>
+                    <th>Descripción</th>
+                    <td>{{ paquete.descripcion }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-.form-group {
-    margin-bottom: 15px;
-}
+        <h3>Ruta del Paquete</h3>
+        <div class="timeline">
+            {% for ruta in rutas %}
+                <div class="timeline-item {% cycle 'left' 'right' %}">
+                    <div class="timeline-content">
+                        <h4>{{ ruta.frase.frase }}</h4>
+                        <p>
+                            De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
+                            <strong>{{ ruta.estado_destino.nombre }}</strong><br>
+                            <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
 
-.table th {
-    width: 25%;
-}
-
-.timeline {
-    position: relative;
-    padding: 20px 0;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 30px;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: #e9ecef;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 20px;
-    padding-left: 60px;
-}
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: 28px;
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    border: 2px solid #6c757d;
-    border-radius: 50%;
-    top: 10px;
-}
-
-.timeline-item.active::before {
-    border-color: #28a745;
-}
-
-.timeline-icon {
-    position: absolute;
-    left: 15px;
-    top: 5px;
-    font-size: 18px;
-    color: #6c757d;
-}
-
-.timeline-item.active .timeline-icon {
-    color: #28a745;
-}
-
-.timeline-content {
-    background: #f8f9fa;
-    padding: 10px 15px;
-    border-radius: 5px;
-}
-
-.timeline-content h4 {
-    margin-top: 0;
-}
-
-.alert {
-    margin-top: 20px;
-}
-</style>
+        {% if paquete.estado_paquete == "Entregado" %}
+            <div class="alert" style="background-color: #32CD32;">
+                <strong>¡Paquete Entregado!</strong> El paquete ha sido entregado el {{ paquete.fecha_entrega|date:"d de F, Y H:i" }}.
+            </div>
+            <form method="POST" action="{% url 'descargar_pdf' paquete.codigo %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-download">Descargar Comprobante</button>
+            </form>
+        {% endif %}
+    {% endif %}
+</div>
 
 {% endblock %}

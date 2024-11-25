@@ -1,4 +1,6 @@
-﻿import traceback
+﻿# paquetes/views.py
+
+import traceback
 import random  # Importar el módulo random
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
@@ -80,22 +82,6 @@ def rastrear_paquete(request):
 				"estado_destino": estado_destino,
 			}
 
-			# Si el paquete está entregado, generar PDF si se solicita
-			if paquete.estado_paquete == "Entregado" and 'download_pdf' in request.POST:
-				# Renderizar el template para el PDF
-				pdf_content = render_to_string('paquete_entregado_pdf.html', context)
-				response = HttpResponse(content_type='application/pdf')
-				response['Content-Disposition'] = f'attachment; filename="paquete_{paquete.codigo}.pdf"'
-
-				# Crear el PDF
-				pisa_status = pisa.CreatePDF(
-					pdf_content, dest=response
-				)
-
-				if pisa_status.err:
-					return HttpResponse('Error al generar el PDF', status=500)
-				return response
-
 			return render(
 				request,
 				"rastreo_paquete.html",
@@ -107,6 +93,53 @@ def rastrear_paquete(request):
 			return render(request, "rastreo_paquete.html", {"error": error})
 
 	return render(request, "rastreo_paquete.html")
+
+# Nueva vista para descargar el PDF
+def descargar_pdf(request, codigo):
+	try:
+		paquete = get_object_or_404(Paquete, codigo=codigo)
+		rutas = list(Ruta.objects.filter(paquete=paquete).order_by("orden"))
+		estado_origen = rutas[0].estado_origen if rutas else None
+		estado_destino = rutas[-1].estado_destino if rutas else None
+
+		context = {
+			"paquete": paquete,
+			"rutas": rutas,
+			"estado_origen": estado_origen,
+			"estado_destino": estado_destino,
+		}
+
+		# Renderizar el template para el PDF
+		pdf_content = render_to_string('paquete_entregado_pdf.html', context)
+		response = HttpResponse(content_type='application/pdf')
+		response['Content-Disposition'] = f'attachment; filename="comprobante_entrega_{paquete.codigo}.pdf"'
+
+		# Crear el PDF
+		pisa_status = pisa.CreatePDF(
+			pdf_content, dest=response
+		)
+
+		if pisa_status.err:
+			return HttpResponse('Error al generar el PDF', status=500)
+		return response
+
+	except Exception as e:
+		error = f"Hubo un error al generar el PDF: {e}"
+		traceback_str = traceback.format_exc()
+		print(traceback_str)  # Imprime el traceback en la consola para depuración
+		# Re-renderizar la página de rastreo con el error
+		rutas = list(Ruta.objects.filter(paquete=paquete).order_by("orden")) if 'paquete' in locals() else []
+		estado_origen = rutas[0].estado_origen if rutas else None
+		estado_destino = rutas[-1].estado_destino if rutas else None
+
+		context = {
+			"error": error,
+			"paquete": paquete,
+			"rutas": rutas,
+			"estado_origen": estado_origen,
+			"estado_destino": estado_destino,
+		}
+		return render(request, "rastreo_paquete.html", context)
 
 # Vista para solicitar envío
 @transaction.atomic
