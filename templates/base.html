@@ -16,7 +16,10 @@
             <div class="container">
                 <a href="#principal" class="skip-link">Ir al contenido principal</a>
                 <div class="logo">
-                    <a href="{% url 'index' %}">Paquetería del Bienestar</a>
+                    <a href="{% url 'index' %}">
+                        <img src="{% static 'css/logo.jpg' %}" alt="Logo Paquetería del Bienestar" class="logo-img">
+                        <span class="logo-text">Paquetería del Bienestar</span>
+                    </a>
                 </div>
                 <nav>
                     <ul>
@@ -39,16 +42,16 @@
 
         <!-- Pie de Página -->
         <footer>
-            <div class="container">
-                <p>© 2024 Paquetería del Bienestar - Todos los derechos reservados.</p>
-                <div class="footer-links">
-                    <ul>
+            <div class="container footer-container">
+                <div class="footer-info">
+                    <p>© 2024 Paquetería del Bienestar - Todos los derechos reservados.</p>
+                    <ul class="footer-links">
                         <li><a href="#">Política de Privacidad</a></li>
                         <li><a href="#">Términos y Condiciones</a></li>
                         <li><a href="#">Contacto</a></li>
                     </ul>
                 </div>
-                <div class="social-icons">
+                <div class="footer-social">
                     <a href="#"><i class="fab fa-facebook-f"></i> Facebook</a>
                     <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
                     <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
