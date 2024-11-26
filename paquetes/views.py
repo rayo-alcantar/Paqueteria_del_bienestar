@@ -326,4 +326,4 @@ def acerca_de(request):
 
 # Vista FAQ
 def FAQ(request):
-	return render(request, "faq.html")  # Apunta a "templates/faq.html"
+	return render(request, "FAQ.html")  # Apunta a "templates/faq.html"
