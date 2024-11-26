@@ -323,3 +323,7 @@ def solicitar_envio(request):
 # Vista "Acerca de"
 def acerca_de(request):
 	return render(request, "acerca_de.html")  # Apunta a "templates/acerca_de.html"
+
+# Vista FAQ
+def FAQ(request):
+	return render(request, "faq.html")  # Apunta a "templates/faq.html"
