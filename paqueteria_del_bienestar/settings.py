@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '95gz=npbnhkvqss#bk-db_by#mz+*$xzeai9n$e0ww$i_v2y1%'
 
 # ¡No ejecutes con debug activado en producción!
-DEBUG = False  # Asegúrate de establecer DEBUG en False en producción
+DEBUG = True # Asegúrate de establecer DEBUG en False en producción
 
 ALLOWED_HOSTS = ['paqueteriabienestar.zapto.org']
 
