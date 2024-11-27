@@ -9,6 +9,7 @@
             font-family: Arial, sans-serif;
             background-color: #8B0000; /* Guinda */
             color: #FFFFFF;
+            padding: 20px;
         }
         h1, h2, h3 {
             text-align: center;
@@ -18,19 +19,26 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
-            background-color: #B22222; /* Tonalidad de rojo */
+            background-color: #FFFFFF; /* Fondo blanco */
         }
         th, td {
-            border: 1px solid #FFFFFF;
-            padding: 8px;
+            border: 1px solid #000000; /* Bordes negros */
+            padding: 12px 15px; /* Aumentar padding para mejor legibilidad */
             text-align: left;
-            color: #FFFFFF;
+            color: #000000; /* Texto negro */
         }
         th {
-            background-color: #CD5C5C; /* Tonalidad más clara de rojo */
+            background-color: #F2F2F2; /* Fondo gris muy claro para encabezados */
+        }
+        tr:nth-child(even) td {
+            background-color: #f9f9f9; /* Filas pares en gris muy claro */
+        }
+        tr:hover td {
+            background-color: #f1f1f1; /* Efecto hover en filas */
         }
         p {
             text-align: center;
+            color: #FFFFFF;
         }
     </style>
 </head>
@@ -97,7 +105,13 @@
             <td>{{ ruta.frase.frase }}</td>
             <td>{{ ruta.estado_origen.nombre }}</td>
             <td>{{ ruta.estado_destino.nombre }}</td>
-            <td>{{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</td>
+            <td>
+                {% if ruta.fecha_actualizacion %}
+                    {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}
+                {% else %}
+                    Pendiente
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
