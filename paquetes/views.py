@@ -1,7 +1,5 @@
-﻿# paquetes/views.py
-
-import traceback
-import random  # Importar el módulo random
+﻿import traceback
+import random
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from .models import Paquete, Estado, Ruta, Frase
@@ -14,6 +12,18 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from io import BytesIO
 from xhtml2pdf import pisa  # Asegúrate de instalar xhtml2pdf
+
+# Mapeo de tiempo de transición por tipo de ruta (2 minutos para cada transición)
+TIEMPO_TRANSICION_MAP = {
+	"Recolección": timedelta(minutes=1),
+	"En Tránsito": timedelta(minutes=1),
+	"En Centro de Distribución": timedelta(minutes=1),
+	"En Entrega": timedelta(minutes=1),
+	# Puedes ajustar estos tiempos según necesidad
+}
+
+# Orden lógico de regiones para facilitar la selección de rutas
+REGION_ORDER = ["Norte", "Centro", "Sur"]
 
 # Vista para la página principal
 def index(request):
@@ -31,10 +41,12 @@ def rastrear_paquete(request):
 			ruta_actual = next((ruta for ruta in rutas if ruta.activo), None)
 
 			if ruta_actual:
-				siguiente_ruta = next((ruta for ruta in rutas if ruta.orden > ruta_actual.orden), None)
+				# Determinar el tipo de ruta basado en el orden
+				tipo_ruta = "Recolección" if ruta_actual.orden == 1 else "En Tránsito"
 
-				# Calcular tiempo de transición entre rutas
-				tiempo_transicion = timedelta(minutes=1)  # Reducir a 1 minuto para acelerar la transición
+				tiempo_transicion = TIEMPO_TRANSICION_MAP.get(tipo_ruta, timedelta(minutes=2))
+
+				siguiente_ruta = next((ruta for ruta in rutas if ruta.orden > ruta_actual.orden), None)
 
 				# Activar la siguiente ruta si el tiempo ha pasado
 				if now() >= ruta_actual.fecha_actualizacion + tiempo_transicion:
@@ -46,8 +58,9 @@ def rastrear_paquete(request):
 						siguiente_ruta.fecha_actualizacion = now()
 						siguiente_ruta.save()
 
-						# Actualizar el estado del paquete
+						# Actualizar el estado del paquete a "En Tránsito"
 						paquete.estado_actual = siguiente_ruta.estado_destino
+						paquete.estado_paquete = "En Tránsito"
 					else:
 						# No hay más rutas, paquete entregado
 						paquete.estado_paquete = "Entregado"
@@ -63,13 +76,14 @@ def rastrear_paquete(request):
 						primera_ruta.fecha_actualizacion = now()
 						primera_ruta.save()
 						paquete.estado_actual = primera_ruta.estado_destino
+						paquete.estado_paquete = "Recolección"
 						paquete.save()
 
-			# Filtrar rutas para mostrar solo las activas y anteriores
+			# Filtrar rutas para mostrar solo las completadas y la activa
 			if paquete.estado_paquete == "Entregado":
 				rutas_relevantes = rutas
 			else:
-				rutas_relevantes = [ruta for ruta in rutas if ruta.fecha_actualizacion]
+				rutas_relevantes = [ruta for ruta in rutas if ruta.fecha_actualizacion or ruta.activo]
 
 			# Obtener estados de origen y destino
 			estado_origen = rutas[0].estado_origen if rutas else None
@@ -222,10 +236,10 @@ def solicitar_envio(request):
 			estado_destino = get_object_or_404(Estado, pk=estado_destino_id)
 
 			# Concatenar direcciones
-			direccion_recoleccion = f"{calle_recoleccion} {numero_recoleccion}, Col. {colonia_recoleccion}, C.P. {codigo_postal_recoleccion}"
+			direccion_recoleccion = f"{calle_recoleccion} {numero_entrega}, Col. {colonia_recoleccion}, C.P. {codigo_postal_recoleccion}"
 			direccion_entrega = f"{calle_entrega} {numero_entrega}, Col. {colonia_entrega}, C.P. {codigo_postal_entrega}"
 
-			# Crear el paquete
+			# Crear el paquete con estado inicial "Recolección"
 			codigo = str(uuid.uuid4()).replace("-", "").upper()[:12]
 			paquete = Paquete.objects.create(
 				codigo=codigo,
@@ -236,7 +250,7 @@ def solicitar_envio(request):
 				descripcion=descripcion,
 				peso=peso,
 				estado_actual=estado_origen,
-				estado_paquete="En tránsito",  # Establecer estado inicial
+				estado_paquete="Recolección",  # Establecer estado inicial en "Recolección"
 			)
 
 			# Crear rutas realistas
@@ -245,22 +259,54 @@ def solicitar_envio(request):
 				raise Exception("No hay frases disponibles en la base de datos.")
 
 			frases_list = list(frases)
-			num_frases = len(frases_list)
 			orden = 1
 			rutas = []
 
 			estados_ruta = [estado_origen]
 
-			# Rutas intermedias
-			if estado_origen.region != estado_destino.region:
-				# Seleccionar estados intermedios lógicos
-				estados_intermedios = list(Estado.objects.filter(
-					region__in=["Centro", "Norte", "Sur"]
-				).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
+			# Ruta 1: Recolección
+			frase_recoleccion = random.choice(frases_list)
+			ruta_recoleccion = Ruta(
+				paquete=paquete,
+				frase=frase_recoleccion,
+				estado_origen=estado_origen,
+				estado_destino=estado_origen,  # Recolección en el mismo estado de origen
+				orden=orden,
+				activo=True,  # Primera ruta activa
+				fecha_actualizacion=now(),
+			)
+			rutas.append(ruta_recoleccion)
+			orden += 1
 
+			# Rutas intermedias basadas en la dirección geográfica
+			if estado_origen.region != estado_destino.region:
+				# Determinar la dirección de la región
+				origen_idx = REGION_ORDER.index(estado_origen.region) if estado_origen.region in REGION_ORDER else -1
+				destino_idx = REGION_ORDER.index(estado_destino.region) if estado_destino.region in REGION_ORDER else -1
+
+				if origen_idx == -1 or destino_idx == -1:
+					# Si alguna región no está en el orden, seleccionar intermedios aleatorios
+					estados_intermedios = list(Estado.objects.filter(
+						region__in=REGION_ORDER
+					).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
+				elif origen_idx < destino_idx:
+					# Mover hacia el sur
+					regiones_intermedias = REGION_ORDER[origen_idx + 1: destino_idx]
+					estados_intermedios = list(Estado.objects.filter(
+						region__in=regiones_intermedias
+					).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
+				else:
+					# Mover hacia el norte
+					regiones_intermedias = REGION_ORDER[destino_idx + 1: origen_idx]
+					estados_intermedios = list(Estado.objects.filter(
+						region__in=regiones_intermedias
+					).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
+
+				# Seleccionar hasta 2 estados intermedios para mayor realismo
 				if estados_intermedios:
-					estado_intermedio = random.choice(estados_intermedios)
-					estados_ruta.append(estado_intermedio)
+					num_intermedias = min(2, len(estados_intermedios))
+					estados_seleccionados = random.sample(estados_intermedios, num_intermedias)
+					estados_ruta.extend(estados_seleccionados)
 
 			estados_ruta.append(estado_destino)
 
@@ -268,16 +314,15 @@ def solicitar_envio(request):
 			for i in range(len(estados_ruta) - 1):
 				estado_origen_ruta = estados_ruta[i]
 				estado_destino_ruta = estados_ruta[i + 1]
-				frase_index = orden - 1 if orden - 1 < num_frases else num_frases - 1
-				frase = frases_list[frase_index]
+				frase = random.choice(frases_list)
 				ruta = Ruta(
 					paquete=paquete,
 					frase=frase,
 					estado_origen=estado_origen_ruta,
 					estado_destino=estado_destino_ruta,
 					orden=orden,
-					activo=(orden == 1),  # Solo la primera ruta activa
-					fecha_actualizacion=now() if orden == 1 else None,
+					activo=False,  # Solo la primera ruta (Recolección) está activa
+					fecha_actualizacion=None,
 				)
 				rutas.append(ruta)
 				orden += 1
