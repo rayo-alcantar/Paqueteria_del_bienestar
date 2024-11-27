@@ -72,14 +72,23 @@
             <h3>Ruta del Paquete</h3>
             <div class="timeline">
                 {% for ruta in rutas %}
-                    <div class="timeline-item {% cycle 'left' 'right' %}">
+                    <div class="timeline-item {% if ruta.activo %}current{% elif ruta.fecha_actualizacion %}completed{% endif %}">
                         <div class="timeline-content">
                             <h4>{{ ruta.frase.frase }}</h4>
                             <p>
                                 De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
                                 <strong>{{ ruta.estado_destino.nombre }}</strong><br>
-                                <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
+                                {% if ruta.fecha_actualizacion %}
+                                    <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
+                                {% else %}
+                                    <small>Pendiente</small>
+                                {% endif %}
                             </p>
+                            {% if ruta.activo %}
+                                <span class="badge badge-primary">En Curso</span>
+                            {% elif ruta.fecha_actualizacion %}
+                                <span class="badge badge-success">Completado</span>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -96,4 +105,78 @@
             {% endif %}
         {% endif %}
     </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.timeline::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    background-color: #ddd;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px;
+}
+.timeline-item {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+}
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: -17px;
+    background-color: white;
+    border: 4px solid #FF9F55;
+    top: 15px;
+    border-radius: 50%;
+    z-index: 1;
+}
+.timeline-item.completed::after {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+.timeline-item.current::after {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.timeline-item.pending::after {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+.timeline-item.left {
+    left: 0;
+}
+.timeline-item.right {
+    left: 50%;
+}
+.timeline-content {
+    padding: 20px 30px;
+    background-color: #f1f1f1;
+    position: relative;
+    border-radius: 6px;
+}
+.badge {
+    margin-top: 10px;
+}
+.badge-success {
+    background-color: #28a745;
+}
+.badge-primary {
+    background-color: #007bff;
+}
+.badge-secondary {
+    background-color: #6c757d;
+}
+</style>
 {% endblock %}
