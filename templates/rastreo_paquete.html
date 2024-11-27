@@ -71,28 +71,28 @@
 
             <h3>Ruta del Paquete</h3>
             <div class="timeline">
-                {% for ruta in rutas %}
-                    <div class="timeline-item {% if ruta.activo %}current{% elif ruta.fecha_actualizacion %}completed{% endif %}">
-                        <div class="timeline-content">
-                            <h4>{{ ruta.frase.frase }}</h4>
-                            <p>
-                                De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
-                                <strong>{{ ruta.estado_destino.nombre }}</strong><br>
-                                {% if ruta.fecha_actualizacion %}
-                                    <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
-                                {% else %}
-                                    <small>Pendiente</small>
-                                {% endif %}
-                            </p>
-                            {% if ruta.activo %}
-                                <span class="badge badge-primary">En Curso</span>
-                            {% elif ruta.fecha_actualizacion %}
-                                <span class="badge badge-success">Completado</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
+    {% for ruta in rutas %}
+        <div class="timeline-item {% if ruta.activo %}current{% elif ruta.fecha_actualizacion %}completed{% endif %}">
+            <div class="timeline-content">
+                <h4>{{ ruta.frase.frase }}</h4>
+                <p>
+                    De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
+                    <strong>{{ ruta.estado_destino.nombre }}</strong><br>
+                    {% if ruta.fecha_actualizacion %}
+                        <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
+                    {% else %}
+                        <small>Pendiente</small>
+                    {% endif %}
+                </p>
+                {% if ruta.activo %}
+                    <span class="badge badge-primary">En Curso</span>
+                {% elif ruta.fecha_actualizacion %}
+                    <span class="badge badge-success">Completado</span>
+                {% endif %}
             </div>
+        </div>
+    {% endfor %}
+</div>
 
             {% if paquete.estado_paquete == "Entregado" %}
                 <div class="alert alert-success">
