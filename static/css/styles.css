@@ -29,7 +29,10 @@ body {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 0;
+    padding: 30px;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 /* Enlace para saltar al contenido principal */
@@ -59,13 +62,10 @@ header .container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-
-header .logo a {
-    text-decoration: none;
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
+    /* Sobrescribir los estilos generales del contenedor */
+    background-color: transparent; /* Eliminar fondo blanco */
+    box-shadow: none; /* Eliminar sombra */
+    padding: 10px 0; /* Ajustar padding */
 }
 
 /* Ajustes para el logo */
@@ -146,7 +146,7 @@ p {
 
 /* Botón específico para descargas */
 .btn-download {
-    background-color: #FF1493; /* Rosa profundo */
+    background-color: #28a745; /* Verde */
     color: #FFFFFF;
     padding: 10px 20px;
     border: none;
@@ -161,7 +161,7 @@ p {
 }
 
 .btn-download:hover {
-    background-color: #C71585; /* Tonalidad más oscura de rosa */
+    background-color: #218838; /* Verde oscuro */
 }
 
 /* Formularios */
@@ -222,81 +222,122 @@ p {
     color: #155724;
 }
 
-/* Tabla */
+/* Estilos de la Tabla */
 .table {
     width: 100%;
     margin-top: 20px;
     border-collapse: collapse;
-    background-color: #B22222; /* Tonalidad de rojo */
+    background-color: #ffffff; /* Fondo blanco */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .table th, .table td {
-    border: 1px solid #FFFFFF;
-    padding: 10px;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
     text-align: left;
 }
 
 .table th {
-    background-color: #CD5C5C; /* Tonalidad más clara de rojo */
+    background-color: #007bff; /* Azul para encabezados */
+    color: #ffffff; /* Texto blanco */
+    font-weight: bold;
+}
+
+.table tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+.table tr:hover td {
+    background-color: #f1f1f1;
 }
 
 /* Línea de tiempo */
 .timeline {
     position: relative;
-    padding: 20px 0;
-    margin-top: 20px;
+    margin: 50px 0;
 }
 
-.timeline::before {
+.timeline::after {
     content: '';
     position: absolute;
-    left: 50%;
+    width: 4px;
+    background-color: #007bff; /* Azul */
     top: 0;
     bottom: 0;
-    width: 4px;
-    background: #FFC0CB; /* Rosa */
+    left: 50%;
     transform: translateX(-50%);
 }
 
 .timeline-item {
     position: relative;
-    width: 45%;
-    padding: 10px;
-    background-color: #B22222;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    color: #FFFFFF;
+    width: 50%;
+    padding: 20px 40px;
+    box-sizing: border-box;
 }
 
-.timeline-item.left {
-    left: 0;
-}
-
-.timeline-item.right {
-    left: 55%;
-}
-
-.timeline-item::after {
+.timeline-item::before {
     content: '';
     position: absolute;
     top: 20px;
-    width: 0;
-    height: 0;
-    border: 10px solid transparent;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    background-color: #ffffff;
+    border: 4px solid #007bff; /* Azul */
+    border-radius: 50%;
+    z-index: 1;
+    transform: translateX(50%);
 }
 
-.timeline-item.left::after {
-    right: -20px;
-    border-left-color: #B22222;
+.timeline-item.completed::before {
+    background-color: #28a745; /* Verde */
+    border-color: #28a745;
 }
 
-.timeline-item.right::after {
-    left: -20px;
-    border-right-color: #B22222;
+.timeline-item.current::before {
+    background-color: #ffc107; /* Amarillo */
+    border-color: #ffc107;
+}
+
+.timeline-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 6px;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    color: #333333;
+    margin-left: 30px;
 }
 
 .timeline-content h4 {
     margin-top: 0;
+    color: #007bff;
+}
+
+.timeline-content p {
+    margin: 10px 0;
+}
+
+.timeline-content .badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: #ffffff;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-primary {
+    background-color: #007bff;
+    color: #ffffff;
 }
 
 /* Footer */
@@ -368,26 +409,6 @@ footer .footer-container {
     margin-right: 5px;
 }
 
-/* Botón específico para descargas */
-.btn-download {
-    background-color: #FF1493; /* Rosa profundo */
-    color: #FFFFFF;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    display: block;
-    margin: 20px auto 0;
-    transition: background-color 0.3s;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.btn-download:hover {
-    background-color: #C71585; /* Tonalidad más oscura de rosa */
-}
-
 /* Mensajes de Error */
 .error-message {
     color: #FF0000; /* Rojo para destacar errores */
@@ -406,6 +427,10 @@ footer .footer-container {
     header .container {
         flex-direction: column;
         align-items: flex-start;
+        /* Sobrescribir estilos generales del contenedor en el header */
+        background-color: transparent; /* Eliminar fondo blanco */
+        box-shadow: none; /* Eliminar sombra */
+        padding: 10px 0; /* Ajustar padding */
     }
 
     header nav ul {
@@ -438,5 +463,24 @@ footer .footer-container {
 
     .logo-text {
         font-size: 18px; /* Tamaño de fuente reducido en móviles */
+    }
+
+    .timeline-item {
+        width: 100%;
+        padding: 20px;
+        margin-left: 0;
+    }
+
+    .timeline-content {
+        margin-left: 0;
+    }
+
+    .timeline::after {
+        left: 20px;
+    }
+
+    .timeline-item::before {
+        left: 20px;
+        transform: translateX(0);
     }
 }
