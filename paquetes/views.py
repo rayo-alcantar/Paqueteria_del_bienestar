@@ -83,8 +83,15 @@ def rastrear_paquete(request):
 			if paquete.estado_paquete == "Entregado":
 				rutas_relevantes = rutas
 			else:
-				rutas_relevantes = [ruta for ruta in rutas if ruta.fecha_actualizacion or ruta.activo]
-
+				# Solo mostrar rutas completadas hasta la ruta activa
+				rutas_relevantes = []
+				for ruta in rutas:
+					if not rutas_relevantes or ruta.activo:
+						rutas_relevantes.append(ruta)
+					elif not ruta.activo and ruta.fecha_actualizacion:
+						rutas_relevantes.append(ruta)
+					else:
+						break
 			# Obtener estados de origen y destino
 			estado_origen = rutas[0].estado_origen if rutas else None
 			estado_destino = rutas[-1].estado_destino if rutas else None
