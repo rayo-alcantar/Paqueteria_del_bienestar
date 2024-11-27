@@ -44,7 +44,7 @@ def rastrear_paquete(request):
 				# Determinar el tipo de ruta basado en el orden
 				tipo_ruta = "Recolección" if ruta_actual.orden == 1 else "En Tránsito"
 
-				tiempo_transicion = TIEMPO_TRANSICION_MAP.get(tipo_ruta, timedelta(minutes=2))
+				tiempo_transicion = TIEMPO_TRANSICION_MAP.get(tipo_ruta, timedelta(minutes=1))
 
 				siguiente_ruta = next((ruta for ruta in rutas if ruta.orden > ruta_actual.orden), None)
 
@@ -307,7 +307,7 @@ def solicitar_envio(request):
 
 				# Seleccionar hasta 2 estados intermedios para mayor realismo
 				if estados_intermedios:
-					num_intermedias = min(2, len(estados_intermedios))
+					num_intermedias = min(4, len(estados_intermedios))
 					estados_seleccionados = random.sample(estados_intermedios, num_intermedias)
 					estados_ruta.extend(estados_seleccionados)
 
