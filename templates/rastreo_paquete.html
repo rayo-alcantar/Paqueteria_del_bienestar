@@ -3,180 +3,317 @@
 {% block title %}Rastrear Paquete{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1 id="principal">Rastrear Paquete</h1>
-        <form method="POST" action="{% url 'rastreo_paquete' %}" class="tracking-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <input 
-                    type="text" 
-                    id="codigo" 
-                    name="codigo" 
-                    placeholder="Ingrese el número de rastreo" 
-                    required>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn">Buscar Paquete</button>
-            </div>
-        </form>
-
-        {% if error %}
-            <div class="alert alert-danger">
-                {{ error }}
-            </div>
-        {% endif %}
-
-        {% if paquete %}
-            <h2>Información del Paquete</h2>
-            <table class="table">
-                <tbody>
-                    <tr>
-                        <th>Número de Rastreo</th>
-                        <td>{{ paquete.codigo }}</td>
-                    </tr>
-                    <tr>
-                        <th>Remitente</th>
-                        <td>{{ paquete.remitente }}</td>
-                    </tr>
-                    <tr>
-                        <th>Receptor</th>
-                        <td>{{ paquete.receptor }}</td>
-                    </tr>
-                    <tr>
-                        <th>Estado de Origen</th>
-                        <td>{{ estado_origen.nombre }}</td>
-                    </tr>
-                    <tr>
-                        <th>Estado de Destino</th>
-                        <td>{{ estado_destino.nombre }}</td>
-                    </tr>
-                    <tr>
-                        <th>Estado Actual</th>
-                        <td>{{ paquete.estado_actual.nombre }}</td>
-                    </tr>
-                    <tr>
-                        <th>Estado del Paquete</th>
-                        <td>{{ paquete.estado_paquete }}</td>
-                    </tr>
-                    <tr>
-                        <th>Peso</th>
-                        <td>{{ paquete.peso }} kg</td>
-                    </tr>
-                    <tr>
-                        <th>Descripción</th>
-                        <td>{{ paquete.descripcion }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>Ruta del Paquete</h3>
-            <div class="timeline">
-    {% for ruta in rutas %}
-        <div class="timeline-item {% if ruta.activo %}current{% elif ruta.fecha_actualizacion %}completed{% endif %}">
-            <div class="timeline-content">
-                <h4>{{ ruta.frase.frase }}</h4>
-                <p>
-                    De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
-                    <strong>{{ ruta.estado_destino.nombre }}</strong><br>
-                    {% if ruta.fecha_actualizacion %}
-                        <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
-                    {% else %}
-                        <small>Pendiente</small>
-                    {% endif %}
-                </p>
-                {% if ruta.activo %}
-                    <span class="badge badge-primary">En Curso</span>
-                {% elif ruta.fecha_actualizacion %}
-                    <span class="badge badge-success">Completado</span>
-                {% endif %}
-            </div>
+<div class="container">
+    <h1 id="principal">Rastrear Paquete</h1>
+    <form method="POST" action="{% url 'rastreo_paquete' %}" class="tracking-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <input 
+                type="text" 
+                id="codigo" 
+                name="codigo" 
+                placeholder="Ingrese el número de rastreo" 
+                required>
         </div>
-    {% endfor %}
-</div>
+        <div class="form-group">
+            <button type="submit" class="btn">Buscar Paquete</button>
+        </div>
+    </form>
 
-            {% if paquete.estado_paquete == "Entregado" %}
-                <div class="alert alert-success">
-                    <strong>¡Paquete Entregado!</strong> El paquete ha sido entregado el {{ paquete.fecha_entrega|date:"d de F, Y H:i" }}.
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if paquete %}
+        <h2>Información del Paquete</h2>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th>Número de Rastreo</th>
+                    <td>{{ paquete.codigo }}</td>
+                </tr>
+                <tr>
+                    <th>Remitente</th>
+                    <td>{{ paquete.remitente }}</td>
+                </tr>
+                <tr>
+                    <th>Receptor</th>
+                    <td>{{ paquete.receptor }}</td>
+                </tr>
+                <tr>
+                    <th>Estado de Origen</th>
+                    <td>{{ estado_origen.nombre }}</td>
+                </tr>
+                <tr>
+                    <th>Estado de Destino</th>
+                    <td>{{ estado_destino.nombre }}</td>
+                </tr>
+                <tr>
+                    <th>Estado Actual</th>
+                    <td>{{ paquete.estado_actual.nombre }}</td>
+                </tr>
+                <tr>
+                    <th>Estado del Paquete</th>
+                    <td>{{ paquete.estado_paquete }}</td>
+                </tr>
+                <tr>
+                    <th>Peso</th>
+                    <td>{{ paquete.peso }} kg</td>
+                </tr>
+                <tr>
+                    <th>Descripción</th>
+                    <td>{{ paquete.descripcion }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Ruta del Paquete</h3>
+        <div class="timeline">
+            {% for ruta in rutas %}
+                <div class="timeline-item {% if ruta.activo %}current{% elif ruta.fecha_actualizacion %}completed{% endif %}">
+                    <div class="timeline-content">
+                        <h4>{{ ruta.frase.frase }}</h4>
+                        <p>
+                            De <strong>{{ ruta.estado_origen.nombre }}</strong> a 
+                            <strong>{{ ruta.estado_destino.nombre }}</strong><br>
+                            {% if ruta.fecha_actualizacion %}
+                                <small>Actualizado: {{ ruta.fecha_actualizacion|date:"d de F, Y H:i" }}</small>
+                            {% else %}
+                                <small>Pendiente</small>
+                            {% endif %}
+                        </p>
+                        {% if ruta.activo %}
+                            <span class="badge badge-warning">En Curso</span>
+                        {% elif ruta.fecha_actualizacion %}
+                            <span class="badge badge-success">Completado</span>
+                        {% endif %}
+                    </div>
                 </div>
-                <form method="POST" action="{% url 'descargar_pdf' paquete.codigo %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-download">Descargar Comprobante</button>
-                </form>
-            {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if paquete.estado_paquete == "Entregado" %}
+            <div class="alert alert-success">
+                <strong>¡Paquete Entregado!</strong> El paquete ha sido entregado el {{ paquete.fecha_entrega|date:"d de F, Y H:i" }}.
+            </div>
+            <form method="POST" action="{% url 'descargar_pdf' paquete.codigo %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-download">Descargar Comprobante</button>
+            </form>
         {% endif %}
-    </div>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+/* Estilos Generales */
+body {
+    background-color: #f0f2f5;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1#principal {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #007bff;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #007bff;
+    color: #fff;
+    text-align: left;
+}
+
+.table tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+/* Estilos del Formulario */
+.tracking-form {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.tracking-form .form-group {
+    margin-right: 10px;
+}
+
+.tracking-form input[type="text"] {
+    padding: 10px;
+    width: 300px;
+    border: 2px solid #007bff;
+    border-radius: 4px;
+}
+
+.tracking-form .btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.tracking-form .btn:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos de Alertas */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Estilos de la Línea de Tiempo */
 .timeline {
     position: relative;
-    max-width: 800px;
-    margin: 0 auto;
+    margin: 50px 0;
 }
+
 .timeline::after {
     content: '';
     position: absolute;
-    width: 6px;
-    background-color: #ddd;
+    width: 4px;
+    background-color: #007bff;
     top: 0;
     bottom: 0;
     left: 50%;
-    margin-left: -3px;
+    margin-left: -2px;
 }
+
 .timeline-item {
-    padding: 10px 40px;
     position: relative;
-    background-color: inherit;
     width: 50%;
+    padding: 20px 40px;
+    box-sizing: border-box;
 }
-.timeline-item::after {
+
+.timeline-item:nth-child(odd) {
+    left: 0;
+}
+
+.timeline-item:nth-child(even) {
+    left: 50%;
+}
+
+.timeline-item::before {
     content: '';
     position: absolute;
-    width: 25px;
-    height: 25px;
-    right: -17px;
-    background-color: white;
-    border: 4px solid #FF9F55;
-    top: 15px;
+    top: 20px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    border: 4px solid #007bff;
     border-radius: 50%;
     z-index: 1;
 }
-.timeline-item.completed::after {
+
+.timeline-item:nth-child(even)::before {
+    left: -15px;
+    right: auto;
+}
+
+.timeline-item.completed::before {
     background-color: #28a745;
     border-color: #28a745;
 }
-.timeline-item.current::after {
-    background-color: #007bff;
-    border-color: #007bff;
+
+.timeline-item.current::before {
+    background-color: #ffc107;
+    border-color: #ffc107;
 }
-.timeline-item.pending::after {
-    background-color: #6c757d;
-    border-color: #6c757d;
-}
-.timeline-item.left {
-    left: 0;
-}
-.timeline-item.right {
-    left: 50%;
-}
+
 .timeline-content {
-    padding: 20px 30px;
-    background-color: #f1f1f1;
-    position: relative;
+    background-color: #fff;
+    padding: 20px;
     border-radius: 6px;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-.badge {
-    margin-top: 10px;
+
+.timeline-item:nth-child(odd) .timeline-content {
+    margin-left: 30px;
 }
+
+.timeline-item:nth-child(even) .timeline-content {
+    margin-right: 30px;
+}
+
+.timeline-content h4 {
+    margin-top: 0;
+    color: #007bff;
+}
+
+.timeline-content p {
+    margin: 10px 0;
+}
+
+.timeline-content .badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
 .badge-success {
     background-color: #28a745;
+    color: #fff;
 }
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
 .badge-primary {
     background-color: #007bff;
+    color: #fff;
 }
-.badge-secondary {
-    background-color: #6c757d;
+
+/* Botón de Descarga */
+.btn-download {
+    display: block;
+    margin: 20px auto;
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-download:hover {
+    background-color: #218838;
 }
 </style>
 {% endblock %}
