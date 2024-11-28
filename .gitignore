@@ -32,3 +32,5 @@ Thumbs.db  # Para Windows
 
 # Otros archivos o configuraciones opcionales
 .env  # Variables de entorno (si usas dotenv)
+*.pyc
+__pycache__/
