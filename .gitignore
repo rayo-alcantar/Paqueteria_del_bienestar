@@ -34,3 +34,5 @@ Thumbs.db  # Para Windows
 .env  # Variables de entorno (si usas dotenv)
 *.pyc
 __pycache__/
+s -tlnp | grep 27017
+staticfiles/
