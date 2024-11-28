@@ -36,3 +36,4 @@ Thumbs.db  # Para Windows
 __pycache__/
 s -tlnp | grep 27017
 staticfiles/
+deploy.py

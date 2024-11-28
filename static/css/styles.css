@@ -1,41 +1,53 @@
-﻿/* Estilos Personalizados */
+﻿/* ============================================================
+   Estilos Personalizados
+   ============================================================ */
 
-/* Reset de márgenes y paddings */
-* {
+/* ------------------------------------------------------------
+   Reset de márgenes y paddings
+   ------------------------------------------------------------ */
+   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Tipografía */
+/* ------------------------------------------------------------
+   Tipografía y estilos básicos del body
+   ------------------------------------------------------------ */
 body {
     font-family: 'Montserrat', sans-serif;
-    background-color: #F6F6F6; /* Fondo claro */
+    background-color: #F6F6F6;
     color: #333333;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* Wrapper para Flexbox */
+/* ------------------------------------------------------------
+   Wrapper para Flexbox
+   ------------------------------------------------------------ */
 .wrapper {
     display: flex;
     flex-direction: column;
     flex: 1;
 }
 
-/* Contenedor General */
+/* ------------------------------------------------------------
+   Contenedor General
+   ------------------------------------------------------------ */
 .container {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 30px;
-    background-color: #FFFFFF;
+    background-color: #5A1631;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* Enlace para saltar al contenido principal */
+/* ------------------------------------------------------------
+   Enlace para saltar al contenido principal (Accesibilidad)
+   ------------------------------------------------------------ */
 .skip-link {
     position: absolute;
     top: -40px;
@@ -51,36 +63,49 @@ body {
     top: 0;
 }
 
-/* Estilos del Header */
+/* ------------------------------------------------------------
+   Estilos del Header
+   ------------------------------------------------------------ */
 header {
-    background-color: #5A1631; /* Fondo guinda */
+    background-color: #5A1631;
     color: #FFFFFF;
-    padding: 10px 0;
+    padding: 15px 0; /* Aumentado de 10px a 15px */
 }
 
 header .container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Sobrescribir los estilos generales del contenedor */
-    background-color: transparent; /* Eliminar fondo blanco */
-    box-shadow: none; /* Eliminar sombra */
-    padding: 10px 0; /* Ajustar padding */
+    background-color: transparent;
+    box-shadow: none;
+    padding: 15px 0; /* Aumentado de 10px a 15px */
 }
 
-/* Ajustes para el logo */
+/* ------------------------------------------------------------
+   Ajustes para el logo
+   ------------------------------------------------------------ */
+.logo-container {
+    display: flex; /* Utiliza Flexbox para alinear logo e texto */
+    align-items: center; /* Centra verticalmente los elementos */
+}
+
 .logo-img {
-    height: 30px; /* Tamaño reducido */
+    height: 40px; /* Mantiene la altura del logo */
     width: auto;
     margin-right: 10px;
 }
 
 .logo-text {
-    font-size: 20px; /* Tamaño de fuente reducido */
+    font-size: 28px; /* Aumentado de 20px a 28px */
     font-weight: bold;
+    color: #FFFFFF;
+    margin: 0; /* Elimina márgenes */
+    line-height: 1; /* Ajusta la altura de línea */
 }
 
-/* Navegación */
+/* ------------------------------------------------------------
+   Navegación en el Header
+   ------------------------------------------------------------ */
 header nav ul {
     list-style: none;
     display: flex;
@@ -97,15 +122,19 @@ header nav ul li a {
     transition: color 0.3s, background-color 0.3s;
     padding: 8px 12px;
     border-radius: 4px;
+    display: flex; /* Asegura alineación vertical */
+    align-items: center; /* Centra contenido verticalmente */
 }
 
 header nav ul li a:hover,
 header nav ul li a.active {
     background-color: rgba(255, 255, 255, 0.2);
-    color: #FFD700; /* Dorado para resaltar */
+    color: #FFD700;
 }
 
-/* Estilos del Contenido Principal */
+/* ------------------------------------------------------------
+   Estilos del Contenido Principal
+   ------------------------------------------------------------ */
 main {
     flex: 1;
     padding: 20px 0;
@@ -128,7 +157,9 @@ p {
     margin-bottom: 15px;
 }
 
-/* Botones */
+/* ------------------------------------------------------------
+   Botones
+   ------------------------------------------------------------ */
 .btn {
     display: inline-block;
     padding: 10px 20px;
@@ -144,9 +175,8 @@ p {
     background-color: #7A2748;
 }
 
-/* Botón específico para descargas */
 .btn-download {
-    background-color: #28a745; /* Verde */
+    background-color: #28a745;
     color: #FFFFFF;
     padding: 10px 20px;
     border: none;
@@ -161,10 +191,12 @@ p {
 }
 
 .btn-download:hover {
-    background-color: #218838; /* Verde oscuro */
+    background-color: #218838;
 }
 
-/* Formularios */
+/* ------------------------------------------------------------
+   Formularios
+   ------------------------------------------------------------ */
 .form-horizontal {
     width: 100%;
 }
@@ -205,7 +237,9 @@ p {
     background-color: #7A2748;
 }
 
-/* Alertas */
+/* ------------------------------------------------------------
+   Alertas
+   ------------------------------------------------------------ */
 .alert {
     padding: 15px;
     border-radius: 5px;
@@ -222,12 +256,14 @@ p {
     color: #155724;
 }
 
-/* Estilos de la Tabla */
+/* ------------------------------------------------------------
+   Estilos de la Tabla
+   ------------------------------------------------------------ */
 .table {
     width: 100%;
     margin-top: 20px;
     border-collapse: collapse;
-    background-color: #ffffff; /* Fondo blanco */
+    background-color: #ffffff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -238,8 +274,8 @@ p {
 }
 
 .table th {
-    background-color: #007bff; /* Azul para encabezados */
-    color: #ffffff; /* Texto blanco */
+    background-color: #f2f2f2; /* Cambiado de azul a gris claro */
+    color: #333333; /* Texto gris oscuro para mejor legibilidad */
     font-weight: bold;
 }
 
@@ -251,7 +287,9 @@ p {
     background-color: #f1f1f1;
 }
 
-/* Línea de tiempo */
+/* ------------------------------------------------------------
+   Línea de tiempo (Timeline)
+   ------------------------------------------------------------ */
 .timeline {
     position: relative;
     margin: 50px 0;
@@ -261,7 +299,7 @@ p {
     content: '';
     position: absolute;
     width: 4px;
-    background-color: #007bff; /* Azul */
+    background-color: #007bff;
     top: 0;
     bottom: 0;
     left: 50%;
@@ -283,19 +321,19 @@ p {
     width: 30px;
     height: 30px;
     background-color: #ffffff;
-    border: 4px solid #007bff; /* Azul */
+    border: 4px solid #007bff;
     border-radius: 50%;
     z-index: 1;
     transform: translateX(50%);
 }
 
 .timeline-item.completed::before {
-    background-color: #28a745; /* Verde */
+    background-color: #28a745;
     border-color: #28a745;
 }
 
 .timeline-item.current::before {
-    background-color: #ffc107; /* Amarillo */
+    background-color: #ffc107;
     border-color: #ffc107;
 }
 
@@ -340,23 +378,25 @@ p {
     color: #ffffff;
 }
 
-/* Footer */
+/* ------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------ */
 footer {
-    background-color: #5A1631; /* Fondo guinda similar al header */
+    background-color: #5A1631;
     color: #FFFFFF;
     padding: 20px 0;
 }
 
 footer .footer-container {
     display: flex;
-    flex-direction: column; /* Apilar elementos verticalmente */
-    align-items: center; /* Centrar horizontalmente */
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     text-align: center;
 }
 
 .footer-info {
-    margin-bottom: 15px; /* Espaciado inferior */
+    margin-bottom: 15px;
 }
 
 .footer-info p {
@@ -366,13 +406,13 @@ footer .footer-container {
 .footer-links {
     list-style: none;
     display: flex;
-    justify-content: center; /* Centrar enlaces */
+    justify-content: center;
     flex-wrap: wrap;
     padding: 0;
 }
 
 .footer-links li {
-    margin: 0 10px; /* Espaciado entre enlaces */
+    margin: 0 10px;
 }
 
 .footer-links li a {
@@ -382,36 +422,38 @@ footer .footer-container {
 }
 
 .footer-links li a:hover {
-    color: #FFD700; /* Dorado al pasar el cursor */
+    color: #FFD700;
 }
 
 .footer-social {
     display: flex;
     align-items: center;
-    justify-content: center; /* Centrar iconos */
+    justify-content: center;
     flex-wrap: wrap;
 }
 
 .footer-social a {
     text-decoration: none;
     color: #FFFFFF;
-    margin: 0 10px; /* Espaciado entre iconos */
+    margin: 0 10px;
     display: flex;
     align-items: center;
     transition: color 0.3s;
 }
 
 .footer-social a:hover {
-    color: #FFD700; /* Dorado al pasar el cursor */
+    color: #FFD700;
 }
 
 .footer-social i {
     margin-right: 5px;
 }
 
-/* Mensajes de Error */
+/* ------------------------------------------------------------
+   Mensajes de Error
+   ------------------------------------------------------------ */
 .error-message {
-    color: #FF0000; /* Rojo para destacar errores */
+    color: #FF0000;
     margin-top: 5px;
     font-size: 14px;
     display: flex;
@@ -422,15 +464,16 @@ footer .footer-container {
     margin-right: 5px;
 }
 
-/* Responsividad */
+/* ------------------------------------------------------------
+   Responsividad
+   ------------------------------------------------------------ */
 @media (max-width: 768px) {
     header .container {
         flex-direction: column;
         align-items: flex-start;
-        /* Sobrescribir estilos generales del contenedor en el header */
-        background-color: transparent; /* Eliminar fondo blanco */
-        box-shadow: none; /* Eliminar sombra */
-        padding: 10px 0; /* Ajustar padding */
+        background-color: transparent;
+        box-shadow: none;
+        padding: 10px 0;
     }
 
     header nav ul {
@@ -443,26 +486,26 @@ footer .footer-container {
     }
 
     footer .footer-container {
-        align-items: center; /* Asegurar centrado en móviles */
+        align-items: center;
     }
 
     footer .footer-content {
-        flex-direction: column; /* Alinear en columna */
-        align-items: center; /* Centrar elementos */
-        text-align: center; /* Centrar texto */
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 
     .footer-social {
-        justify-content: center; /* Centrar social icons */
+        justify-content: center;
         margin-top: 15px;
     }
 
     .logo-img {
-        height: 25px; /* Tamaño aún más pequeño en móviles */
+        height: 25px;
     }
 
     .logo-text {
-        font-size: 18px; /* Tamaño de fuente reducido en móviles */
+        font-size: 18px;
     }
 
     .timeline-item {
