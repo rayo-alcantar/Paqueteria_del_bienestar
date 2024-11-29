@@ -1,12 +1,11 @@
 import uuid
 from django.db import models
 
-
 class Estado(models.Model):
 	nombre = models.CharField(max_length=100, unique=True)
-	latitud = models.FloatField(null=True, blank=True, default=0.0)  # Permitir valores nulos y default
-	longitud = models.FloatField(null=True, blank=True, default=0.0)  # Permitir valores nulos y default
-	region = models.CharField(max_length=50, null=True, blank=True)  # Permitir valores nulos
+	latitud = models.FloatField(null=True, blank=True, default=0.0)
+	longitud = models.FloatField(null=True, blank=True, default=0.0)
+	region = models.CharField(max_length=100, null=True, blank=True)  # Aumentado max_length a 100
 
 	def __str__(self):
 		return self.nombre
@@ -64,8 +63,8 @@ class Ruta(models.Model):
 		Estado, on_delete=models.CASCADE, related_name="rutas_destino"
 	)
 	fecha_actualizacion = models.DateTimeField(auto_now_add=True)
-	orden = models.PositiveIntegerField(default=0)  # Nuevo: orden lógico de la ruta
-	activo = models.BooleanField(default=False)  # Nuevo: indica si es el estado actual
+	orden = models.PositiveIntegerField(default=0)  # Orden lógico de la ruta
+	activo = models.BooleanField(default=False)  # Indica si es el estado actual
 
 	def __str__(self):
 		return f"Ruta: {self.estado_origen} -> {self.estado_destino} | Paquete: {self.paquete.codigo}"

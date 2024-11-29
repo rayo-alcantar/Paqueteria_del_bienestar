@@ -2,6 +2,7 @@
 import random
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
+from django.db.models import Q  # Importamos Q para construir consultas complejas
 from .models import Paquete, Estado, Ruta, Frase
 from django.utils.timezone import now
 from datetime import timedelta
@@ -19,11 +20,8 @@ TIEMPO_TRANSICION_MAP = {
 	"En Tránsito": timedelta(minutes=1),
 	"En Centro de Distribución": timedelta(minutes=1),
 	"En Entrega": timedelta(minutes=1),
-	# Puedes ajustar estos tiempos según necesidad
+	
 }
-
-# Orden lógico de regiones para facilitar la selección de rutas
-REGION_ORDER = ["Norte", "Centro", "Sur"]
 
 # Vista para la página principal
 def index(request):
@@ -239,7 +237,7 @@ def solicitar_envio(request):
 			estado_destino = get_object_or_404(Estado, pk=estado_destino_id)
 
 			# Concatenar direcciones
-			direccion_recoleccion = f"{calle_recoleccion} {numero_entrega}, Col. {colonia_recoleccion}, C.P. {codigo_postal_recoleccion}"
+			direccion_recoleccion = f"{calle_recoleccion} {numero_recoleccion}, Col. {colonia_recoleccion}, C.P. {codigo_postal_recoleccion}"
 			direccion_entrega = f"{calle_entrega} {numero_entrega}, Col. {colonia_entrega}, C.P. {codigo_postal_entrega}"
 
 			# Crear el paquete con estado inicial "Recolección"
@@ -256,7 +254,7 @@ def solicitar_envio(request):
 				estado_paquete="Recolección",  # Establecer estado inicial en "Recolección"
 			)
 
-			# Crear rutas realistas
+			# Crear rutas realistas basadas en las regiones
 			frases = Frase.objects.all()
 			if not frases.exists():
 				raise Exception("No hay frases disponibles en la base de datos.")
@@ -281,35 +279,32 @@ def solicitar_envio(request):
 			rutas.append(ruta_recoleccion)
 			orden += 1
 
-			# Rutas intermedias basadas en la dirección geográfica
-			if estado_origen.region != estado_destino.region:
-				# Determinar la dirección de la región
-				origen_idx = REGION_ORDER.index(estado_origen.region) if estado_origen.region in REGION_ORDER else -1
-				destino_idx = REGION_ORDER.index(estado_destino.region) if estado_destino.region in REGION_ORDER else -1
+			# Obtener regiones de origen y destino
+			regiones_origen = [region.strip() for region in estado_origen.region.split(',')]
+			regiones_destino = [region.strip() for region in estado_destino.region.split(',')]
 
-				if origen_idx == -1 or destino_idx == -1:
-					# Si alguna región no está en el orden, seleccionar intermedios aleatorios
-					estados_intermedios = list(Estado.objects.filter(
-						region__in=REGION_ORDER
-					).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
-				elif origen_idx < destino_idx:
-					# Mover hacia el sur
-					regiones_intermedias = REGION_ORDER[origen_idx + 1: destino_idx]
-					estados_intermedios = list(Estado.objects.filter(
-						region__in=regiones_intermedias
-					).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
-				else:
-					# Mover hacia el norte
-					regiones_intermedias = REGION_ORDER[destino_idx + 1: origen_idx]
-					estados_intermedios = list(Estado.objects.filter(
-						region__in=regiones_intermedias
-					).exclude(pk__in=[estado_origen.pk, estado_destino.pk]).distinct())
+			# Obtener estados intermedios que conecten las regiones
+			estados_intermedios = Estado.objects.exclude(pk__in=[estado_origen.pk, estado_destino.pk])
 
-				# Seleccionar hasta 2 estados intermedios para mayor realismo
-				if estados_intermedios:
-					num_intermedias = min(2, len(estados_intermedios))
-					estados_seleccionados = random.sample(estados_intermedios, num_intermedias)
-					estados_ruta.extend(estados_seleccionados)
+			# Filtrar estados que compartan regiones con origen o destino usando Q y icontains
+			filtros = Q()
+			for region in regiones_origen + regiones_destino:
+				filtros |= Q(region__icontains=region)
+
+			estados_intermedios = estados_intermedios.filter(filtros)
+
+			# Convertir a lista y eliminar duplicados
+			estados_intermedios = list(set(estados_intermedios))
+
+			# Si no hay estados intermedios, seleccionar otros estados aleatorios
+			if not estados_intermedios:
+				estados_intermedios = list(Estado.objects.exclude(pk__in=[estado_origen.pk, estado_destino.pk]))
+
+			# Seleccionar al menos 2 estados intermedios
+			num_intermedias = min(2, len(estados_intermedios))
+			if num_intermedias > 0:
+				estados_seleccionados = random.sample(estados_intermedios, num_intermedias)
+				estados_ruta.extend(estados_seleccionados)
 
 			estados_ruta.append(estado_destino)
 
