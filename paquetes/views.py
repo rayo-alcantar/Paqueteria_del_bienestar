@@ -2,32 +2,28 @@
 import random
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
-from django.db.models import Q  # Importamos Q para construir consultas complejas
+from django.db.models import Q
 from .models import Paquete, Estado, Ruta, Frase
 from django.utils.timezone import now
 from datetime import timedelta
 import uuid
 
-# Importaciones adicionales para generar PDFs
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from io import BytesIO
-from xhtml2pdf import pisa  # Asegúrate de instalar xhtml2pdf
+from xhtml2pdf import pisa
 
-# Mapeo de tiempo de transición por tipo de ruta (2 minutos para cada transición)
+# Mapeo de tiempo de transición por tipo de ruta (1 minuto para cada transición)
 TIEMPO_TRANSICION_MAP = {
 	"Recolección": timedelta(minutes=1),
 	"En Tránsito": timedelta(minutes=1),
 	"En Centro de Distribución": timedelta(minutes=1),
 	"En Entrega": timedelta(minutes=1),
-	
 }
 
-# Vista para la página principal
 def index(request):
-	return render(request, 'index.html')  # Apunta a "templates/index.html"
+	return render(request, 'index.html')
 
-# Vista para rastrear paquete
 def rastrear_paquete(request):
 	if request.method == "POST":
 		codigo = request.POST.get("codigo")
@@ -35,57 +31,54 @@ def rastrear_paquete(request):
 			paquete = get_object_or_404(Paquete, codigo=codigo)
 			rutas = list(Ruta.objects.filter(paquete=paquete).order_by("orden"))
 
-			# Identificar la ruta activa actual
-			ruta_actual = next((ruta for ruta in rutas if ruta.activo), None)
+			# Obtener la fecha de inicio
+			fecha_inicio = rutas[0].fecha_actualizacion if rutas else None
 
-			if ruta_actual:
-				# Determinar el tipo de ruta basado en el orden
-				tipo_ruta = "Recolección" if ruta_actual.orden == 1 else "En Tránsito"
+			if fecha_inicio:
+				elapsed_time = now() - fecha_inicio
 
-				tiempo_transicion = TIEMPO_TRANSICION_MAP.get(tipo_ruta, timedelta(minutes=2))
+				tiempo_acumulado = timedelta(0)
+				current_route = None
+				rutas_relevantes = []
 
-				siguiente_ruta = next((ruta for ruta in rutas if ruta.orden > ruta_actual.orden), None)
+				for ruta in rutas:
+					tipo_ruta = "Recolección" if ruta.orden == 1 else "En Tránsito"
+					tiempo_transicion = TIEMPO_TRANSICION_MAP.get(tipo_ruta, timedelta(minutes=1))
+					tiempo_acumulado += tiempo_transicion
 
-				# Activar la siguiente ruta si el tiempo ha pasado
-				if now() >= ruta_actual.fecha_actualizacion + tiempo_transicion:
-					ruta_actual.activo = False
-					ruta_actual.save()
-
-					if siguiente_ruta:
-						siguiente_ruta.activo = True
-						siguiente_ruta.fecha_actualizacion = now()
-						siguiente_ruta.save()
-
-						# Actualizar el estado del paquete a "En Tránsito"
-						paquete.estado_actual = siguiente_ruta.estado_destino
-						paquete.estado_paquete = "En Tránsito"
+					if elapsed_time >= tiempo_acumulado:
+						# Esta ruta se ha completado
+						ruta.activo = False
+						ruta.fecha_actualizacion = fecha_inicio + (tiempo_acumulado - tiempo_transicion)
+						ruta.save()
+						rutas_relevantes.append(ruta)
 					else:
-						# No hay más rutas, paquete entregado
-						paquete.estado_paquete = "Entregado"
-						paquete.fecha_entrega = now()
+						if current_route is None:
+							current_route = ruta
+							ruta.activo = True
+							ruta.fecha_actualizacion = fecha_inicio + (tiempo_acumulado - tiempo_transicion)
+							ruta.save()
+							rutas_relevantes.append(ruta)
+						break
 
+				if current_route is None:
+					# Todas las rutas completadas
+					paquete.estado_paquete = "Entregado"
+					paquete.fecha_entrega = fecha_inicio + tiempo_acumulado
+					paquete.save()
+
+					# Todas las rutas están inactivas
+					Ruta.objects.filter(paquete=paquete).update(activo=False)
+
+					rutas_relevantes = rutas  # Mostrar todas las rutas
+				else:
+					paquete.estado_actual = current_route.estado_destino
+					paquete.estado_paquete = tipo_ruta
 					paquete.save()
 			else:
-				# Si no hay ruta activa y el paquete no está entregado, activamos la primera ruta
-				if paquete.estado_paquete != "Entregado":
-					primera_ruta = rutas[0] if rutas else None
-					if primera_ruta:
-						primera_ruta.activo = True
-						primera_ruta.fecha_actualizacion = now()
-						primera_ruta.save()
-						paquete.estado_actual = primera_ruta.estado_destino
-						paquete.estado_paquete = "Recolección"
-						paquete.save()
+				error = "No se pudo determinar la fecha de inicio del paquete."
+				return render(request, "rastreo_paquete.html", {"error": error})
 
-			# Filtrar rutas para mostrar solo las completadas y la activa
-			if paquete.estado_paquete == "Entregado":
-				rutas_relevantes = rutas
-			else:
-				rutas_relevantes = []
-				for ruta in rutas:
-					rutas_relevantes.append(ruta)
-					if ruta.activo:
-						break
 			# Obtener estados de origen y destino
 			estado_origen = rutas[0].estado_origen if rutas else None
 			estado_destino = rutas[-1].estado_destino if rutas else None
@@ -109,7 +102,6 @@ def rastrear_paquete(request):
 
 	return render(request, "rastreo_paquete.html")
 
-# Nueva vista para descargar el PDF
 def descargar_pdf(request, codigo):
 	try:
 		paquete = get_object_or_404(Paquete, codigo=codigo)
@@ -141,8 +133,7 @@ def descargar_pdf(request, codigo):
 	except Exception as e:
 		error = f"Hubo un error al generar el PDF: {e}"
 		traceback_str = traceback.format_exc()
-		print(traceback_str)  # Imprime el traceback en la consola para depuración
-		# Re-renderizar la página de rastreo con el error
+		print(traceback_str)
 		rutas = list(Ruta.objects.filter(paquete=paquete).order_by("orden")) if 'paquete' in locals() else []
 		estado_origen = rutas[0].estado_origen if rutas else None
 		estado_destino = rutas[-1].estado_destino if rutas else None
@@ -156,7 +147,6 @@ def descargar_pdf(request, codigo):
 		}
 		return render(request, "rastreo_paquete.html", context)
 
-# Vista para solicitar envío
 @transaction.atomic
 def solicitar_envio(request):
 	estados = Estado.objects.all()
@@ -185,7 +175,7 @@ def solicitar_envio(request):
 			estado_origen_id = request.POST.get("estado_origen_id")
 			estado_destino_id = request.POST.get("estado_destino_id")
 
-			# Validar entrada de datos
+			# Validaciones
 			if not descripcion:
 				errors['descripcion'] = "La descripción es obligatoria."
 			if not peso:
@@ -251,10 +241,10 @@ def solicitar_envio(request):
 				descripcion=descripcion,
 				peso=peso,
 				estado_actual=estado_origen,
-				estado_paquete="Recolección",  # Establecer estado inicial en "Recolección"
+				estado_paquete="Recolección",
 			)
 
-			# Crear rutas realistas basadas en las regiones
+			# Crear rutas
 			frases = Frase.objects.all()
 			if not frases.exists():
 				raise Exception("No hay frases disponibles en la base de datos.")
@@ -266,14 +256,15 @@ def solicitar_envio(request):
 			estados_ruta = [estado_origen]
 
 			# Ruta 1: Recolección
-			frase_recoleccion = random.choice(frases_list)
+			frase_recoleccion, created = Frase.objects.get_or_create(frase="En Recolección")
+
 			ruta_recoleccion = Ruta(
 				paquete=paquete,
 				frase=frase_recoleccion,
 				estado_origen=estado_origen,
-				estado_destino=estado_origen,  # Recolección en el mismo estado de origen
+				estado_destino=estado_origen,
 				orden=orden,
-				activo=True,  # Primera ruta activa
+				activo=True,
 				fecha_actualizacion=now(),
 			)
 			rutas.append(ruta_recoleccion)
@@ -285,22 +276,16 @@ def solicitar_envio(request):
 
 			# Obtener estados intermedios que conecten las regiones
 			estados_intermedios = Estado.objects.exclude(pk__in=[estado_origen.pk, estado_destino.pk])
-
-			# Filtrar estados que compartan regiones con origen o destino usando Q y icontains
 			filtros = Q()
 			for region in regiones_origen + regiones_destino:
 				filtros |= Q(region__icontains=region)
 
 			estados_intermedios = estados_intermedios.filter(filtros)
-
-			# Convertir a lista y eliminar duplicados
 			estados_intermedios = list(set(estados_intermedios))
 
-			# Si no hay estados intermedios, seleccionar otros estados aleatorios
 			if not estados_intermedios:
 				estados_intermedios = list(Estado.objects.exclude(pk__in=[estado_origen.pk, estado_destino.pk]))
 
-			# Seleccionar al menos 2 estados intermedios
 			num_intermedias = min(2, len(estados_intermedios))
 			if num_intermedias > 0:
 				estados_seleccionados = random.sample(estados_intermedios, num_intermedias)
@@ -319,7 +304,7 @@ def solicitar_envio(request):
 					estado_origen=estado_origen_ruta,
 					estado_destino=estado_destino_ruta,
 					orden=orden,
-					activo=False,  # Solo la primera ruta (Recolección) está activa
+					activo=False,
 					fecha_actualizacion=None,
 				)
 				rutas.append(ruta)
@@ -345,7 +330,6 @@ def solicitar_envio(request):
 				},
 			)
 		except ValueError:
-			# Enviamos los errores específicos al template
 			return render(request, "solicitar_envio.html", {
 				"errors": errors,
 				"estados": estados,
@@ -354,7 +338,7 @@ def solicitar_envio(request):
 		except Exception as e:
 			error = f"Hubo un error al procesar tu solicitud: {e}"
 			traceback_str = traceback.format_exc()
-			print(traceback_str)  # Imprime el traceback en la consola para depuración
+			print(traceback_str)
 			return render(request, "solicitar_envio.html", {
 				"error": error,
 				"estados": estados,
@@ -363,10 +347,8 @@ def solicitar_envio(request):
 
 	return render(request, "solicitar_envio.html", {"estados": estados})
 
-# Vista "Acerca de"
 def acerca_de(request):
-	return render(request, "acerca_de.html")  # Apunta a "templates/acerca_de.html"
+	return render(request, "acerca_de.html")
 
-# Vista FAQ
 def FAQ(request):
-	return render(request, "FAQ.html")  # Apunta a "templates/faq.html"
+	return render(request, "FAQ.html")
